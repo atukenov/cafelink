@@ -6,8 +6,22 @@ export async function GET() {
   try {
     await dbConnect();
     
-    const products = await Product.find({}).populate('additionalItems').sort({ createdAt: -1 });
-    return NextResponse.json(products);
+    const products = await Product.find({}).sort({ createdAt: -1 });
+    
+    const AdditionalItem = (await import('@/models/AdditionalItem')).default;
+    const additionalItems = await AdditionalItem.find({});
+    
+    const productsWithAdditionalItems = products.map(product => ({
+      ...product.toObject(),
+      additionalItems: additionalItems.map(item => ({
+        _id: item._id,
+        name: item.name,
+        price: item.price,
+        createdAt: item.createdAt
+      }))
+    }));
+    
+    return NextResponse.json(productsWithAdditionalItems);
   } catch (error) {
     console.error('Get products error:', error);
     return NextResponse.json(
