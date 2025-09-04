@@ -6,6 +6,7 @@ import { ArrowLeft, Clock, CheckCircle, Coffee, MapPin } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { Order } from '@/lib/types';
+import { socketManager } from '@/lib/socket';
 
 export default function OrderStatusPage() {
   const params = useParams();
@@ -17,8 +18,24 @@ export default function OrderStatusPage() {
   useEffect(() => {
     if (orderId) {
       loadOrder();
-      const interval = setInterval(loadOrder, 30000);
-      return () => clearInterval(interval);
+      
+      const socket = socketManager.connect();
+      socketManager.joinClient(orderId);
+      
+      socketManager.onOrderUpdated((data) => {
+        if (data.orderId === orderId) {
+          setOrder(prev => prev ? {
+            ...prev,
+            status: data.status,
+            estimatedTime: data.estimatedTime,
+            updatedAt: new Date().toISOString()
+          } : null);
+        }
+      });
+
+      return () => {
+        socketManager.offOrderUpdated();
+      };
     }
   }, [orderId]);
 
@@ -36,10 +53,19 @@ export default function OrderStatusPage() {
 
   const getStatusSteps = () => {
     const steps = [
-      { key: 'pending', label: 'Order Received', icon: Clock },
+      { key: 'received', label: 'Order Received', icon: Clock },
+      { key: 'viewed', label: 'Order Viewed', icon: Clock },
       { key: 'accepted', label: 'Preparing', icon: Coffee },
       { key: 'ready', label: 'Ready for Pickup', icon: CheckCircle },
     ];
+
+    if (order?.status === 'rejected') {
+      return [
+        { key: 'received', label: 'Order Received', icon: Clock, completed: true, current: false },
+        { key: 'viewed', label: 'Order Viewed', icon: Clock, completed: true, current: false },
+        { key: 'rejected', label: 'Order Rejected', icon: Clock, completed: true, current: true },
+      ];
+    }
 
     const currentIndex = steps.findIndex(step => step.key === order?.status);
     
@@ -53,17 +79,17 @@ export default function OrderStatusPage() {
   const getEstimatedTime = () => {
     if (!order) return '';
     
-    const orderTime = new Date(order.createdAt);
-    const now = new Date();
-    const elapsed = Math.floor((now.getTime() - orderTime.getTime()) / 1000 / 60);
-    
     switch (order.status) {
-      case 'pending':
-        return '5-10 minutes';
+      case 'received':
+        return 'Waiting for confirmation';
+      case 'viewed':
+        return 'Being reviewed';
       case 'accepted':
-        return `${Math.max(5 - elapsed, 1)}-${Math.max(10 - elapsed, 2)} minutes`;
+        return order.estimatedTime ? `${order.estimatedTime} minutes` : '15-20 minutes';
       case 'ready':
         return 'Ready now!';
+      case 'rejected':
+        return 'Order rejected';
       default:
         return '';
     }

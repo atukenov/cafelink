@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, Phone, Lock } from 'lucide-react';
+import { ArrowLeft, Shield, Phone, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 
-export default function EmployeeLoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
@@ -29,8 +29,8 @@ export default function EmployeeLoginPage() {
     try {
       const response = await apiClient.login({ phone: phone.trim(), pin: pin.trim() });
       
-      if (!['employee', 'admin', 'administrator', 'author'].includes(response.role)) {
-        setError('Access denied. Employee, admin, administrator, or author account required.');
+      if (!['admin', 'author'].includes(response.role)) {
+        setError('Access denied. Admin account required.');
         return;
       }
 
@@ -47,7 +47,7 @@ export default function EmployeeLoginPage() {
   };
 
   const handleOTPVerification = () => {
-    router.push('/employee/dashboard');
+    router.push('/admin/dashboard');
   };
 
   if (showOTP) {
@@ -86,24 +86,21 @@ export default function EmployeeLoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-xl font-bold text-gray-800">Employee Login</h1>
+          <h1 className="text-xl font-bold text-gray-800">Admin Login</h1>
         </div>
 
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-white" />
+            <Shield className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-          <p className="text-gray-600">Sign in to access your dashboard</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Coffee Shop Admin</h2>
+          <p className="text-gray-600">Manage employees and menu</p>
         </div>
 
-        {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -155,11 +152,10 @@ export default function EmployeeLoginPage() {
           </button>
         </form>
 
-        {/* Demo Info */}
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800 font-medium mb-2">Demo Credentials:</p>
+          <p className="text-sm text-blue-800 font-medium mb-2">Admin Access:</p>
           <p className="text-xs text-blue-600">
-            Use any phone number and PIN for demo purposes
+            Employee management, menu administration, and role assignments
           </p>
         </div>
       </div>

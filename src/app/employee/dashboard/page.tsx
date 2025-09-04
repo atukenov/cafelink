@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { LogOut, Clock, CheckSquare, MessageSquare, User } from 'lucide-react';
+import { LogOut, Clock, CheckSquare, MessageSquare, User, Coffee } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function EmployeeDashboardPage() {
@@ -17,7 +17,7 @@ export default function EmployeeDashboardPage() {
     }
 
     const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== 'employee') {
+    if (!['employee', 'admin', 'administrator', 'author'].includes(parsedUser.role)) {
       router.push('/employee/login');
       return;
     }
@@ -77,6 +77,24 @@ export default function EmployeeDashboardPage() {
         {/* Quick Actions */}
         <div className="space-y-4">
           <Link
+            href="/employee/orders"
+            className="block bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow border-2 border-blue-200"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Coffee className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-800 mb-1">Orders</h3>
+                  <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">PRIORITY</span>
+                </div>
+                <p className="text-sm text-gray-600">Manage customer orders with live updates</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
             href="/employee/shift"
             className="block bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
           >
@@ -96,8 +114,8 @@ export default function EmployeeDashboardPage() {
             className="block bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <CheckSquare className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <CheckSquare className="w-6 h-6 text-purple-600" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-800 mb-1">Tasks</h3>
@@ -111,8 +129,8 @@ export default function EmployeeDashboardPage() {
             className="block bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <MessageSquare className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                <MessageSquare className="w-6 h-6 text-amber-600" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-800 mb-1">Messages</h3>
