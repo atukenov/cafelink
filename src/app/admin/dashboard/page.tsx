@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Shield, Users, Coffee, UserCheck, Settings } from 'lucide-react';
+import { ArrowLeft, Shield, Users, Coffee, UserCheck, Settings, Clock, CheckSquare, MessageSquare, BarChart3, Megaphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function AdminDashboardPage() {
@@ -104,22 +104,82 @@ export default function AdminDashboardPage() {
           </Link>
 
           <Link
-            href="/employee/orders"
+            href="/admin/shifts"
             className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <UserCheck className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <Clock className="w-6 h-6 text-blue-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Order Management</h3>
-                <p className="text-sm text-gray-600">View and manage customer orders</p>
+                <h3 className="font-semibold text-gray-800">Shift Management</h3>
+                <p className="text-sm text-gray-600">Schedule employee shifts</p>
               </div>
             </div>
           </Link>
 
           <Link
-            href="/employee/dashboard"
+            href="/admin/tasks"
+            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                <CheckSquare className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-800">Task Management</h3>
+                <p className="text-sm text-gray-600">Create and assign tasks</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/messages"
+            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <MessageSquare className="w-6 h-6 text-purple-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-800">Live Messaging</h3>
+                <p className="text-sm text-gray-600">Send announcements to employees</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/statistics"
+            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-teal-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-800">Employee Statistics</h3>
+                <p className="text-sm text-gray-600">View performance metrics</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/promotions"
+            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                <Megaphone className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-800">Sales & News</h3>
+                <p className="text-sm text-gray-600">Create promotions for clients</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/employee/orders"
             className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
           >
             <div className="flex items-center gap-4">
@@ -127,8 +187,8 @@ export default function AdminDashboardPage() {
                 <Settings className="w-6 h-6 text-gray-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Employee Interface</h3>
-                <p className="text-sm text-gray-600">Access employee features</p>
+                <h3 className="font-semibold text-gray-800">Order Management</h3>
+                <p className="text-sm text-gray-600">View and manage customer orders</p>
               </div>
             </div>
           </Link>

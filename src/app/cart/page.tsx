@@ -44,7 +44,13 @@ export default function CartPage() {
   };
 
   const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cart.reduce((total, item) => {
+      const itemTotal = item.price * item.quantity;
+      const additionalItemsTotal = item.selectedAdditionalItems?.reduce(
+        (addTotal, addItem) => addTotal + (addItem.price * addItem.quantity * item.quantity), 0
+      ) || 0;
+      return total + itemTotal + additionalItemsTotal;
+    }, 0);
   };
 
   const getTotalItems = () => {
@@ -96,7 +102,16 @@ export default function CartPage() {
                     
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-800 mb-1">{item.name}</h3>
-                      <p className="text-amber-600 font-bold mb-3">{item.price} ₸</p>
+                      <p className="text-amber-600 font-bold mb-1">{item.price} ₸</p>
+                      {item.selectedAdditionalItems && item.selectedAdditionalItems.length > 0 && (
+                        <div className="mb-2">
+                          {item.selectedAdditionalItems.map((addItem) => (
+                            <p key={addItem.additionalItemId} className="text-sm text-gray-600">
+                              + {addItem.name} (×{addItem.quantity}) +{addItem.price * addItem.quantity * item.quantity}₸
+                            </p>
+                          ))}
+                        </div>
+                      )}
                       
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">

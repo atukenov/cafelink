@@ -29,6 +29,21 @@ export default function EmployeeMessagesPage() {
 
     setUser(parsedUser);
     loadMessages();
+
+    if (typeof window !== 'undefined') {
+      import('@/lib/socket').then(({ socketManager }) => {
+        socketManager.connect();
+        socketManager.joinEmployee();
+        
+        socketManager.onNewMessage((data: any) => {
+          loadMessages();
+        });
+
+        return () => {
+          socketManager.offNewMessage();
+        };
+      });
+    }
   }, [router]);
 
   const loadMessages = async () => {

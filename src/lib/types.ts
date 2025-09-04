@@ -57,6 +57,8 @@ export interface Task {
   description: string;
   status: 'pending' | 'done';
   employeeId?: string;
+  createdBy?: string;
+  isGlobal: boolean;
   createdAt: string;
 }
 
@@ -69,4 +71,46 @@ export interface Message {
 
 export interface CartItem extends Product {
   quantity: number;
+  selectedAdditionalItems?: {
+    additionalItemId: string;
+    quantity: number;
+    name: string;
+    price: number;
+  }[];
+}
+
+export interface ScheduledShift {
+  _id: string;
+  employeeId: string;
+  weekdays: number[];
+  startTime: string;
+  endTime: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface Promotion {
+  _id: string;
+  type: 'sale' | 'news';
+  title: string;
+  description: string;
+  imageUrl?: string;
+  isActive: boolean;
+  validFrom: string;
+  validTo?: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface EmployeeStats {
+  _id: string;
+  employeeId: string;
+  tasksCompleted: number;
+  tasksAssigned: number;
+  shiftsAttended: number;
+  shiftsScheduled: number;
+  ordersProcessed: number;
+  averageOrderTime: number;
+  rating: number;
+  lastUpdated: string;
 }

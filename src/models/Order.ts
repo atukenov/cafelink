@@ -28,6 +28,10 @@ const OrderItemSchema = new Schema<IOrderItem>({
     required: true,
     min: 1,
   },
+  additionalItems: [{
+    additionalItemId: { type: String, required: true },
+    quantity: { type: Number, required: true, min: 1 }
+  }]
 });
 
 const OrderSchema = new Schema<IOrder>({
