@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
   _id: string;
-  role: 'client' | 'employee';
+  role: 'client' | 'employee' | 'admin' | 'administrator' | 'author';
   name: string;
   phone: string;
   pin?: string;
@@ -12,7 +12,7 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>({
   role: {
     type: String,
-    enum: ['client', 'employee'],
+    enum: ['client', 'employee', 'admin', 'administrator', 'author'],
     required: true,
   },
   name: {
@@ -27,7 +27,7 @@ const UserSchema = new Schema<IUser>({
   pin: {
     type: String,
     required: function() {
-      return this.role === 'employee';
+      return ['employee', 'admin', 'administrator', 'author'].includes(this.role);
     },
   },
   createdAt: {

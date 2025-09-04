@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, Phone, Lock } from 'lucide-react';
+import { ArrowLeft, Crown, Phone, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 
-export default function EmployeeLoginPage() {
+export default function AuthorLoginPage() {
   const router = useRouter();
   const [phone, setPhone] = useState('');
   const [pin, setPin] = useState('');
@@ -29,8 +29,8 @@ export default function EmployeeLoginPage() {
     try {
       const response = await apiClient.login({ phone: phone.trim(), pin: pin.trim() });
       
-      if (!['employee', 'admin', 'administrator', 'author'].includes(response.role)) {
-        setError('Access denied. Employee, admin, administrator, or author account required.');
+      if (response.role !== 'author') {
+        setError('Access denied. Author account required.');
         return;
       }
 
@@ -47,26 +47,26 @@ export default function EmployeeLoginPage() {
   };
 
   const handleOTPVerification = () => {
-    router.push('/employee/dashboard');
+    router.push('/author/dashboard');
   };
 
   if (showOTP) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-8 h-8 text-blue-600" />
+          <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-8 h-8 text-purple-600" />
           </div>
           
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Verification Code</h1>
           <p className="text-gray-600 mb-6">
-            Your verification code is: <span className="font-bold text-blue-600">{mockOTP}</span>
+            Your verification code is: <span className="font-bold text-purple-600">{mockOTP}</span>
           </p>
           
           <div className="space-y-4">
             <button
               onClick={handleOTPVerification}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
             >
               Verify & Continue
             </button>
@@ -86,24 +86,21 @@ export default function EmployeeLoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-xl font-bold text-gray-800">Employee Login</h1>
+          <h1 className="text-xl font-bold text-gray-800">Author Login</h1>
         </div>
 
-        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Crown className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-          <p className="text-gray-600">Sign in to access your dashboard</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">System Author</h2>
+          <p className="text-gray-600">Full system access</p>
         </div>
 
-        {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -115,7 +112,7 @@ export default function EmployeeLoginPage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 placeholder="+7 (xxx) xxx-xx-xx"
                 disabled={loading}
               />
@@ -132,7 +129,7 @@ export default function EmployeeLoginPage() {
                 type="password"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 placeholder="Enter your PIN"
                 maxLength={6}
                 disabled={loading}
@@ -149,17 +146,16 @@ export default function EmployeeLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
-        {/* Demo Info */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800 font-medium mb-2">Demo Credentials:</p>
-          <p className="text-xs text-blue-600">
-            Use any phone number and PIN for demo purposes
+        <div className="mt-8 p-4 bg-purple-50 rounded-lg">
+          <p className="text-sm text-purple-800 font-medium mb-2">Author Access:</p>
+          <p className="text-xs text-purple-600">
+            Full system administration and user management
           </p>
         </div>
       </div>

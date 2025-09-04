@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Product from '@/models/Product';
+import AdditionalItem from '@/models/AdditionalItem';
 
 export async function PUT(
   request: NextRequest,
@@ -9,25 +9,25 @@ export async function PUT(
   try {
     await dbConnect();
     
-    const { name, price, imageUrl, additionalItems } = await request.json();
+    const { name, price, productId } = await request.json();
     const { id } = await params;
 
-    const product = await Product.findByIdAndUpdate(
+    const additionalItem = await AdditionalItem.findByIdAndUpdate(
       id,
-      { name, price, imageUrl, additionalItems: additionalItems || [] },
+      { name, price, productId: productId || undefined },
       { new: true, runValidators: true }
-    ).populate('additionalItems');
+    );
 
-    if (!product) {
+    if (!additionalItem) {
       return NextResponse.json(
-        { error: 'Product not found' },
+        { error: 'Additional item not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(product);
+    return NextResponse.json(additionalItem);
   } catch (error) {
-    console.error('Update product error:', error);
+    console.error('Update additional item error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -43,18 +43,18 @@ export async function DELETE(
     await dbConnect();
     
     const { id } = await params;
-    const product = await Product.findByIdAndDelete(id);
+    const additionalItem = await AdditionalItem.findByIdAndDelete(id);
 
-    if (!product) {
+    if (!additionalItem) {
       return NextResponse.json(
-        { error: 'Product not found' },
+        { error: 'Additional item not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ message: 'Product deleted successfully' });
+    return NextResponse.json({ message: 'Additional item deleted successfully' });
   } catch (error) {
-    console.error('Delete product error:', error);
+    console.error('Delete additional item error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

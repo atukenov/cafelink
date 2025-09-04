@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "node server.js",
     "build": "next build --turbopack",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "NODE_ENV=production node server.js",
+    "lint": "eslint",
+    "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -21,6 +22,8 @@
     "qrcode": "^1.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

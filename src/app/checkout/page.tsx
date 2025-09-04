@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { CartItem } from '@/lib/types';
 import QRCode from '@/components/QRCode';
+import { socketManager } from '@/lib/socket';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -69,6 +70,9 @@ export default function CheckoutPage() {
       };
 
       const order = await apiClient.createOrder(orderData);
+      
+      const socket = socketManager.connect();
+      socketManager.emitNewOrder(order);
       
       localStorage.removeItem('cart');
       

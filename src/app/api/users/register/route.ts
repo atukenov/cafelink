@@ -16,9 +16,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (role === 'employee' && !pin) {
+    if (['employee', 'admin', 'administrator', 'author'].includes(role) && !pin) {
       return NextResponse.json(
-        { error: 'PIN is required for employees' },
+        { error: 'PIN is required for employees, admins, administrators, and authors' },
         { status: 400 }
       );
     }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       phone,
     };
 
-    if (role === 'employee' && pin) {
+    if (['employee', 'admin', 'administrator', 'author'].includes(role) && pin) {
       userData.pin = await hashPassword(pin);
     }
 

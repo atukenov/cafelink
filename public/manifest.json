@@ -1,0 +1,27 @@
+{
+  "name": "CafeLink - Coffee Shop App",
+  "short_name": "CafeLink",
+  "description": "Order coffee from CafeLink coffee shop in Atyrau, Kazakhstan",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#d97706",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["food", "business"],
+  "lang": "en",
+  "dir": "ltr"
+}

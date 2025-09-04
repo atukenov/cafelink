@@ -28,13 +28,28 @@ export async function POST(request: NextRequest) {
       totalPrice,
       customerName,
       customerPhone,
-      status: 'pending',
+      status: 'received',
     });
 
     await order.save();
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
     console.error('Create order error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    await dbConnect();
+    
+    const orders = await Order.find({}).sort({ createdAt: -1 });
+    return NextResponse.json(orders);
+  } catch (error) {
+    console.error('Get orders error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

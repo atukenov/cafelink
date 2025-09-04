@@ -9,11 +9,13 @@ export interface IOrder extends Document {
   _id: string;
   userId: string;
   items: IOrderItem[];
-  status: 'pending' | 'accepted' | 'ready';
+  status: 'received' | 'viewed' | 'accepted' | 'rejected' | 'ready';
   totalPrice: number;
   customerName?: string;
   customerPhone?: string;
+  estimatedTime?: number;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const OrderItemSchema = new Schema<IOrderItem>({
@@ -36,8 +38,8 @@ const OrderSchema = new Schema<IOrder>({
   items: [OrderItemSchema],
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'ready'],
-    default: 'pending',
+    enum: ['received', 'viewed', 'accepted', 'rejected', 'ready'],
+    default: 'received',
   },
   totalPrice: {
     type: Number,
@@ -51,7 +53,15 @@ const OrderSchema = new Schema<IOrder>({
     type: String,
     required: false,
   },
+  estimatedTime: {
+    type: Number,
+    required: false,
+  },
   createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
     type: Date,
     default: Date.now,
   },
