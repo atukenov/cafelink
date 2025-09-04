@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { LogOut, Clock, CheckSquare, MessageSquare, User } from 'lucide-react';
+import { LogOut, Clock, CheckSquare, MessageSquare, User, Coffee } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function EmployeeDashboardPage() {
@@ -17,7 +17,7 @@ export default function EmployeeDashboardPage() {
     }
 
     const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== 'employee') {
+    if (!['employee', 'admin'].includes(parsedUser.role)) {
       router.push('/employee/login');
       return;
     }
@@ -102,6 +102,21 @@ export default function EmployeeDashboardPage() {
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-800 mb-1">Tasks</h3>
                 <p className="text-sm text-gray-600">View and complete daily tasks</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/employee/orders"
+            className="block bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <Coffee className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-800 mb-1">Orders</h3>
+                <p className="text-sm text-gray-600">Manage incoming orders and status</p>
               </div>
             </div>
           </Link>

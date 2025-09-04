@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (user.role === 'employee') {
+    if (user.role === 'employee' || user.role === 'admin') {
       if (!pin) {
         return NextResponse.json(
-          { error: 'PIN is required for employees' },
+          { error: 'PIN is required for employees and admins' },
           { status: 400 }
         );
       }

@@ -1,6 +1,6 @@
 export interface User {
   _id: string;
-  role: 'client' | 'employee';
+  role: 'client' | 'employee' | 'admin';
   name: string;
   phone: string;
   createdAt: string;
@@ -23,11 +23,13 @@ export interface Order {
   _id: string;
   userId?: string;
   items: OrderItem[];
-  status: 'pending' | 'accepted' | 'ready';
+  status: 'received' | 'viewed' | 'accepted' | 'rejected' | 'ready';
   totalPrice: number;
   customerName?: string;
   customerPhone?: string;
+  estimatedTime?: number;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface Shift {

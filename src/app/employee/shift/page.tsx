@@ -23,7 +23,7 @@ export default function EmployeeShiftPage() {
     }
 
     const parsedUser = JSON.parse(userData);
-    if (parsedUser.role !== 'employee') {
+    if (!['employee', 'admin'].includes(parsedUser.role)) {
       router.push('/employee/login');
       return;
     }

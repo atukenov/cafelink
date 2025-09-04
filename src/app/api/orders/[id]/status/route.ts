@@ -9,19 +9,24 @@ export async function PUT(
   try {
     await dbConnect();
     
-    const { status } = await request.json();
+    const { status, estimatedTime } = await request.json();
     const { id } = await params;
 
-    if (!status || !['pending', 'accepted', 'ready'].includes(status)) {
+    if (!status || !['received', 'viewed', 'accepted', 'rejected', 'ready'].includes(status)) {
       return NextResponse.json(
-        { error: 'Valid status is required (pending, accepted, ready)' },
+        { error: 'Valid status is required (received, viewed, accepted, rejected, ready)' },
         { status: 400 }
       );
     }
 
+    const updateData: any = { status, updatedAt: new Date() };
+    if (estimatedTime && status === 'accepted') {
+      updateData.estimatedTime = estimatedTime;
+    }
+
     const order = await Order.findByIdAndUpdate(
       id,
-      { status },
+      updateData,
       { new: true, runValidators: true }
     );
 

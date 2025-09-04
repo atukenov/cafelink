@@ -97,10 +97,10 @@ export class ApiClient {
     return this.request(`/orders/user/${userId}`);
   }
 
-  async updateOrderStatus(orderId: string, status: string) {
+  async updateOrderStatus(orderId: string, data: { status: string; estimatedTime?: number }) {
     return this.request(`/orders/${orderId}/status`, {
       method: 'PUT',
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(data),
     });
   }
 

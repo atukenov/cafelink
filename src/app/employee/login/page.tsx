@@ -29,8 +29,8 @@ export default function EmployeeLoginPage() {
     try {
       const response = await apiClient.login({ phone: phone.trim(), pin: pin.trim() });
       
-      if (response.role !== 'employee') {
-        setError('Access denied. Employee account required.');
+      if (!['employee', 'admin'].includes(response.role)) {
+        setError('Access denied. Employee or admin account required.');
         return;
       }
 
