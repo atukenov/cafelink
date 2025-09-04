@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Coffee, ShoppingBag, Users } from 'lucide-react';
+import { Coffee, ShoppingBag, Users, Shield, Crown } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -37,14 +37,30 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Employee Access */}
-        <div className="pt-6 border-t border-gray-200">
+        {/* Staff Access */}
+        <div className="pt-6 border-t border-gray-200 space-y-3">
           <Link 
             href="/employee/login"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors"
           >
             <Users className="w-5 h-5" />
             Employee Login
+          </Link>
+          
+          <Link 
+            href="/admin/login"
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors"
+          >
+            <Shield className="w-5 h-5" />
+            Admin Login
+          </Link>
+          
+          <Link 
+            href="/author/login"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors"
+          >
+            <Crown className="w-5 h-5" />
+            Author Login
           </Link>
         </div>
       </div>

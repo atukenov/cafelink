@@ -32,37 +32,38 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
-async function createAdmin() {
+async function createAuthor() {
   try {
     await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    const existingAdmin = await User.findOne({ phone: '+77777777777' });
-    if (existingAdmin) {
-      console.log('Admin user already exists');
+    const existingAuthor = await User.findOne({ phone: '+77711770303' });
+    if (existingAuthor) {
+      console.log('Author user already exists');
       return;
     }
 
-    const hashedPin = await bcrypt.hash('7777', 12);
+    const hashedPin = await bcrypt.hash('2788', 12);
     
-    const admin = new User({
-      role: 'admin',
-      name: 'Admin',
-      phone: '+77777777777',
+    const author = new User({
+      role: 'author',
+      name: 'Lord',
+      phone: '+77711770303',
       pin: hashedPin,
     });
 
-    await admin.save();
-    console.log('Admin user created successfully');
-    console.log('Phone: +77777777777');
-    console.log('PIN: 7777');
+    await author.save();
+    console.log('Author user created successfully');
+    console.log('Name: Lord');
+    console.log('Phone: +77711770303');
+    console.log('PIN: 2788');
     
   } catch (error) {
-    console.error('Error creating admin user:', error);
+    console.error('Error creating author user:', error);
   } finally {
     await mongoose.disconnect();
     console.log('Disconnected from MongoDB');
   }
 }
 
-createAdmin();
+createAuthor();

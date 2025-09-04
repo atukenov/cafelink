@@ -69,10 +69,10 @@ export class ApiClient {
     return this.request('/products');
   }
 
-  async createProduct(productData: { name: string; price: number; imageUrl: string }) {
+  async createProduct(data: { name: string; price: number; imageUrl: string; additionalItems?: string[] }) {
     return this.request('/products', {
       method: 'POST',
-      body: JSON.stringify(productData),
+      body: JSON.stringify(data),
     });
   }
 
@@ -149,6 +149,54 @@ export class ApiClient {
       method: 'POST',
       body: JSON.stringify(messageData),
     });
+  }
+
+  async getAdditionalItems() {
+    return this.request('/additional-items');
+  }
+
+  async createAdditionalItem(data: { name: string; price: number; productId?: string }) {
+    return this.request('/additional-items', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateAdditionalItem(id: string, data: { name: string; price: number; productId?: string }) {
+    return this.request(`/additional-items/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAdditionalItem(id: string) {
+    return this.request(`/additional-items/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async updateProduct(id: string, data: { name: string; price: number; imageUrl: string; additionalItems?: string[] }) {
+    return this.request(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProduct(id: string) {
+    return this.request(`/products/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async createUser(data: { role: string; name: string; phone: string; pin?: string }) {
+    return this.request('/users/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getUsers() {
+    return this.request('/users');
   }
 }
 

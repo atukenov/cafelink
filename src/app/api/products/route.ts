@@ -6,7 +6,7 @@ export async function GET() {
   try {
     await dbConnect();
     
-    const products = await Product.find({}).sort({ createdAt: -1 });
+    const products = await Product.find({}).populate('additionalItems').sort({ createdAt: -1 });
     return NextResponse.json(products);
   } catch (error) {
     console.error('Get products error:', error);
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     
-    const { name, price, imageUrl } = await request.json();
+    const { name, price, imageUrl, additionalItems } = await request.json();
 
     if (!name || !price || !imageUrl) {
       return NextResponse.json(
@@ -34,10 +34,12 @@ export async function POST(request: NextRequest) {
       name,
       price,
       imageUrl,
+      additionalItems: additionalItems || [],
     });
 
     await product.save();
-    return NextResponse.json(product, { status: 201 });
+    const populatedProduct = await Product.findById(product._id).populate('additionalItems');
+    return NextResponse.json(populatedProduct, { status: 201 });
   } catch (error) {
     console.error('Create product error:', error);
     return NextResponse.json(
