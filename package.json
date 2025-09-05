@@ -7,7 +7,10 @@
     "build": "next build --turbopack",
     "start": "NODE_ENV=production node server.js",
     "lint": "eslint",
-    "create-admin": "node scripts/create-admin.js"
+    "create-admin": "node scripts/create-admin.js",
+    "create-author": "node scripts/create-author.js",
+    "seed-menu": "node scripts/seed-menu.js",
+    "seed-items": "node scripts/seed-additional-items.js"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
