@@ -10,19 +10,53 @@ export interface IEmployeeStats extends Document {
   ordersProcessed: number;
   averageOrderTime: number;
   rating: number;
+  comments: string[];
   lastUpdated: Date;
 }
 
 const EmployeeStatsSchema = new Schema<IEmployeeStats>({
-  employeeId: { type: String, required: true, unique: true },
-  tasksCompleted: { type: Number, default: 0 },
-  tasksAssigned: { type: Number, default: 0 },
-  shiftsAttended: { type: Number, default: 0 },
-  shiftsScheduled: { type: Number, default: 0 },
-  ordersProcessed: { type: Number, default: 0 },
-  averageOrderTime: { type: Number, default: 0 },
-  rating: { type: Number, default: 5, min: 1, max: 5 },
-  lastUpdated: { type: Date, default: Date.now }
+  employeeId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  tasksCompleted: {
+    type: Number,
+    default: 0,
+  },
+  tasksAssigned: {
+    type: Number,
+    default: 0,
+  },
+  shiftsAttended: {
+    type: Number,
+    default: 0,
+  },
+  shiftsScheduled: {
+    type: Number,
+    default: 0,
+  },
+  ordersProcessed: {
+    type: Number,
+    default: 0,
+  },
+  averageOrderTime: {
+    type: Number,
+    default: 0,
+  },
+  rating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+  },
+  comments: [{
+    type: String,
+  }],
+  lastUpdated: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 export default mongoose.models.EmployeeStats || mongoose.model<IEmployeeStats>('EmployeeStats', EmployeeStatsSchema);

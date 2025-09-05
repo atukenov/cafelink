@@ -9,7 +9,7 @@ export async function PUT(
   try {
     await dbConnect();
     
-    const { status, estimatedTime } = await request.json();
+    const { status, estimatedTime, rejectionReason } = await request.json();
     const { id } = await params;
 
     if (!status || !['received', 'viewed', 'accepted', 'rejected', 'ready'].includes(status)) {
@@ -22,6 +22,9 @@ export async function PUT(
     const updateData: any = { status, updatedAt: new Date() };
     if (estimatedTime && status === 'accepted') {
       updateData.estimatedTime = estimatedTime;
+    }
+    if (rejectionReason && status === 'rejected') {
+      updateData.rejectionReason = rejectionReason;
     }
 
     const order = await Order.findByIdAndUpdate(

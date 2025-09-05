@@ -34,6 +34,13 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     loadCart();
+    
+    const clientData = localStorage.getItem('client');
+    if (clientData) {
+      const client = JSON.parse(clientData);
+      setCustomerName(client.name || '');
+      setCustomerPhone(client.phone || '');
+    }
   }, []);
 
   const getTotalPrice = () => {

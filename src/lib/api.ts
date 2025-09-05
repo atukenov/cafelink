@@ -199,8 +199,9 @@ export class ApiClient {
     return this.request('/users');
   }
 
-  async getScheduledShifts() {
-    return this.request('/scheduled-shifts');
+  async getScheduledShifts(employeeId?: string) {
+    const url = employeeId ? `/scheduled-shifts?employeeId=${employeeId}` : '/scheduled-shifts';
+    return this.request(url);
   }
 
   async createScheduledShift(data: { employeeId: string; weekdays: number[]; startTime: string; endTime: string }) {
@@ -264,6 +265,14 @@ export class ApiClient {
 
   async getActivePromotions() {
     return this.request('/promotions/active');
+  }
+
+  async getCurrentShift(employeeId: string) {
+    return this.request(`/shifts/current?employeeId=${employeeId}`);
+  }
+
+  async getUnreadCounts(employeeId: string) {
+    return this.request(`/unread-counts?employeeId=${employeeId}`);
   }
 }
 

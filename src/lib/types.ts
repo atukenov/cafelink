@@ -41,6 +41,7 @@ export interface Order {
   customerName?: string;
   customerPhone?: string;
   estimatedTime?: number;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -25,6 +25,8 @@ export default function AdminStatisticsPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
   const [statistics, setStatistics] = useState<EmployeeStatsWithName[]>([]);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,8 +49,12 @@ export default function AdminStatisticsPage() {
 
   const loadStatistics = async () => {
     try {
-      const data = await apiClient.getStatistics();
-      setStatistics(data);
+      const [statisticsData, employeesData] = await Promise.all([
+        apiClient.getStatistics(),
+        apiClient.getUsers()
+      ]);
+      setStatistics(statisticsData);
+      setEmployees(employeesData.filter((emp: any) => ['employee', 'administrator'].includes(emp.role)));
     } catch (err) {
       setError('Failed to load statistics');
       console.error('Error loading statistics:', err);
@@ -113,6 +119,9 @@ export default function AdminStatisticsPage() {
   }
 
   const overallStats = getOverallStats();
+  const selectedEmployee = selectedEmployeeId 
+    ? statistics.find(stat => stat.employeeId === selectedEmployeeId)
+    : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -156,6 +165,105 @@ export default function AdminStatisticsPage() {
             </div>
           </div>
         </div>
+
+        {/* Employee Selection Dropdown */}
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Select Employee for Detailed View
+          </label>
+          <select
+            value={selectedEmployeeId}
+            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2"
+          >
+            <option value="">Choose an employee...</option>
+            {employees.map(employee => (
+              <option key={employee._id} value={employee._id}>
+                {employee.name} ({employee.role})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Selected Employee Detailed Stats */}
+        {selectedEmployee && (
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">{selectedEmployee.employeeName}</h3>
+                <p className="text-sm text-gray-600">{selectedEmployee.employeePhone}</p>
+              </div>
+              <div className="ml-auto flex items-center gap-1">
+                <Star className="w-5 h-5 text-amber-500" />
+                <span className="text-lg font-bold">{selectedEmployee.rating}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-blue-50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {Math.round((selectedEmployee.shiftsAttended / Math.max(selectedEmployee.shiftsScheduled, 1)) * 
+                    (selectedEmployee.shiftsAttended * 8))} hrs
+                </div>
+                <div className="text-sm text-gray-600">Hours Worked</div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {selectedEmployee.ordersProcessed}
+                </div>
+                <div className="text-sm text-gray-600">Orders Completed</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-purple-50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-purple-600">
+                  {selectedEmployee.tasksCompleted}
+                </div>
+                <div className="text-sm text-gray-600">Tasks Completed</div>
+              </div>
+              <div className="bg-amber-50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-amber-600">
+                  {selectedEmployee.rating}/5
+                </div>
+                <div className="text-sm text-gray-600">Rating</div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-3">
+              <h4 className="font-medium text-gray-800 mb-2">Performance Summary</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Task Completion Rate:</span>
+                  <span className="font-medium">
+                    {calculateTaskCompletionRate(selectedEmployee.tasksCompleted, selectedEmployee.tasksAssigned)}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Shift Attendance:</span>
+                  <span className="font-medium">
+                    {calculateShiftAttendanceRate(selectedEmployee.shiftsAttended, selectedEmployee.shiftsScheduled)}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Avg Order Time:</span>
+                  <span className="font-medium">
+                    {selectedEmployee.averageOrderTime > 0 ? formatTime(selectedEmployee.averageOrderTime) : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-3 border-t">
+              <p className="text-xs text-gray-500">
+                Last updated: {new Date(selectedEmployee.lastUpdated).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+        )}
 
         {statistics.length === 0 ? (
           <div className="text-center py-12">

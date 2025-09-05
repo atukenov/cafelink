@@ -16,6 +16,7 @@ export default function AdminShiftsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingShift, setEditingShift] = useState<ScheduledShift | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
   const [formData, setFormData] = useState({
     employeeId: '',
     weekdays: [] as number[],
@@ -119,6 +120,10 @@ export default function AdminShiftsPage() {
     return employee?.name || 'Unknown';
   };
 
+  const filteredShifts = selectedEmployeeId 
+    ? shifts.filter(shift => shift.employeeId === selectedEmployeeId)
+    : shifts;
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -167,6 +172,25 @@ export default function AdminShiftsPage() {
           </div>
         )}
 
+        {/* Employee Filter */}
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Filter by Employee
+          </label>
+          <select
+            value={selectedEmployeeId}
+            onChange={(e) => setSelectedEmployeeId(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2"
+          >
+            <option value="">All Employees</option>
+            {employees.map(employee => (
+              <option key={employee._id} value={employee._id}>
+                {employee.name} ({employee.role})
+              </option>
+            ))}
+          </select>
+        </div>
+
         {shifts.length === 0 ? (
           <div className="text-center py-12">
             <Clock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -181,7 +205,17 @@ export default function AdminShiftsPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {shifts.map((shift) => (
+            {selectedEmployeeId && (
+              <div className="bg-blue-50 rounded-lg p-3 mb-4">
+                <p className="text-blue-800 font-medium">
+                  Showing shifts for: {getEmployeeName(selectedEmployeeId)}
+                </p>
+                <p className="text-blue-600 text-sm">
+                  {filteredShifts.length} shift{filteredShifts.length !== 1 ? 's' : ''} found
+                </p>
+              </div>
+            )}
+            {filteredShifts.map((shift) => (
               <div key={shift._id} className="bg-white rounded-xl shadow-sm p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
