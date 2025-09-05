@@ -51,6 +51,16 @@ app.prepare().then(() => {
       socket.to('employees').emit('new-order', orderData);
     });
 
+    socket.on('new-message', (data) => {
+      socket.to('employees').emit('new-message', data);
+      console.log('New message broadcasted to employees:', data.title);
+    });
+
+    socket.on('task-update', (data) => {
+      socket.to('employees').emit('task-update', data);
+      console.log('Task update broadcasted to employees:', data.taskId);
+    });
+
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id);
     });

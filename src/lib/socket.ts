@@ -68,6 +68,42 @@ class SocketManager {
       this.socket.off('new-order');
     }
   }
+
+  emitNewMessage(messageData: any) {
+    if (this.socket) {
+      this.socket.emit('new-message', messageData);
+    }
+  }
+
+  onNewMessage(callback: (data: any) => void) {
+    if (this.socket) {
+      this.socket.on('new-message', callback);
+    }
+  }
+
+  offNewMessage() {
+    if (this.socket) {
+      this.socket.off('new-message');
+    }
+  }
+
+  emitTaskUpdate(taskData: any) {
+    if (this.socket) {
+      this.socket.emit('task-update', taskData);
+    }
+  }
+
+  onTaskUpdate(callback: (data: any) => void) {
+    if (this.socket) {
+      this.socket.on('task-update', callback);
+    }
+  }
+
+  offTaskUpdate() {
+    if (this.socket) {
+      this.socket.off('task-update');
+    }
+  }
 }
 
 export const socketManager = new SocketManager();

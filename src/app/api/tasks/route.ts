@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       description,
       employeeId,
       status: 'pending',
+      isGlobal: !employeeId,
     });
 
     await task.save();

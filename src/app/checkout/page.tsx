@@ -37,7 +37,13 @@ export default function CheckoutPage() {
   }, []);
 
   const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return cart.reduce((total, item) => {
+      const itemTotal = item.price * item.quantity;
+      const additionalItemsTotal = item.selectedAdditionalItems?.reduce(
+        (addTotal, addItem) => addTotal + (addItem.price * addItem.quantity * item.quantity), 0
+      ) || 0;
+      return total + itemTotal + additionalItemsTotal;
+    }, 0);
   };
 
   const handlePayment = async () => {
@@ -63,6 +69,10 @@ export default function CheckoutPage() {
         items: cart.map(item => ({
           productId: item._id,
           quantity: item.quantity,
+          additionalItems: item.selectedAdditionalItems?.map(addItem => ({
+            additionalItemId: addItem.additionalItemId,
+            quantity: addItem.quantity
+          })) || []
         })),
         totalPrice: getTotalPrice(),
         customerName: customerName.trim(),
@@ -226,9 +236,21 @@ export default function CheckoutPage() {
           <h3 className="font-semibold text-gray-800 mb-3">Order Summary</h3>
           <div className="space-y-2">
             {cart.map((item) => (
-              <div key={item._id} className="flex justify-between text-sm">
-                <span>{item.name} x{item.quantity}</span>
-                <span>{item.price * item.quantity} ₸</span>
+              <div key={item._id} className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span>{item.name} x{item.quantity}</span>
+                  <span>{item.price * item.quantity} ₸</span>
+                </div>
+                {item.selectedAdditionalItems && item.selectedAdditionalItems.length > 0 && (
+                  <div className="ml-4 space-y-1">
+                    {item.selectedAdditionalItems.map((addItem) => (
+                      <div key={addItem.additionalItemId} className="flex justify-between text-xs text-gray-600">
+                        <span>+ {addItem.name} x{addItem.quantity}</span>
+                        <span>+{addItem.price * addItem.quantity * item.quantity} ₸</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
             <div className="border-t pt-2">

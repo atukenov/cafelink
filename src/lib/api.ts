@@ -198,6 +198,73 @@ export class ApiClient {
   async getUsers() {
     return this.request('/users');
   }
+
+  async getScheduledShifts() {
+    return this.request('/scheduled-shifts');
+  }
+
+  async createScheduledShift(data: { employeeId: string; weekdays: number[]; startTime: string; endTime: string }) {
+    return this.request('/scheduled-shifts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateScheduledShift(id: string, data: { employeeId: string; weekdays: number[]; startTime: string; endTime: string; isActive: boolean }) {
+    return this.request(`/scheduled-shifts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteScheduledShift(id: string) {
+    return this.request(`/scheduled-shifts/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getPromotions() {
+    return this.request('/promotions');
+  }
+
+  async createPromotion(data: { type: string; title: string; description: string; imageUrl?: string; validFrom: string; validTo?: string; createdBy: string }) {
+    return this.request('/promotions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePromotion(id: string, data: { type: string; title: string; description: string; imageUrl?: string; isActive: boolean; validFrom: string; validTo?: string }) {
+    return this.request(`/promotions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePromotion(id: string) {
+    return this.request(`/promotions/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getStatistics() {
+    return this.request('/statistics');
+  }
+
+  async updateStatistics(data: { employeeId: string; action: string; value?: number }) {
+    return this.request('/statistics', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getCurrentShifts() {
+    return this.request('/current-shifts');
+  }
+
+  async getActivePromotions() {
+    return this.request('/promotions/active');
+  }
 }
 
 export const apiClient = new ApiClient();
