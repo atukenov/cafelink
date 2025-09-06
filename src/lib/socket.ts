@@ -104,6 +104,42 @@ class SocketManager {
       this.socket.off('task-update');
     }
   }
+
+  emitUserTyping(userId: string, userName: string) {
+    if (this.socket) {
+      this.socket.emit('user-typing', { userId, userName });
+    }
+  }
+
+  onUserTyping(callback: (data: any) => void) {
+    if (this.socket) {
+      this.socket.on('user-typing', callback);
+    }
+  }
+
+  offUserTyping() {
+    if (this.socket) {
+      this.socket.off('user-typing');
+    }
+  }
+
+  emitMarkMessagesRead(userId: string) {
+    if (this.socket) {
+      this.socket.emit('mark-messages-read', { userId });
+    }
+  }
+
+  onMessagesRead(callback: (data: any) => void) {
+    if (this.socket) {
+      this.socket.on('messages-read', callback);
+    }
+  }
+
+  offMessagesRead() {
+    if (this.socket) {
+      this.socket.off('messages-read');
+    }
+  }
 }
 
 export const socketManager = new SocketManager();

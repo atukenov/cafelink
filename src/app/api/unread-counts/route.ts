@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
-import Message from '@/models/Message';
+import ChatMessage from '@/models/ChatMessage';
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
 
     const [newOrdersCount, unreadMessagesCount] = await Promise.all([
       Order.countDocuments({ status: 'received' }),
-      Message.countDocuments({
-        createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+      ChatMessage.countDocuments({
+        'readBy.userId': { $ne: employeeId }
       })
     ]);
 

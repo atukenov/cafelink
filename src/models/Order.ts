@@ -19,6 +19,8 @@ export interface IOrder extends Document {
   customerPhone?: string;
   estimatedTime?: number;
   rejectionReason?: string;
+  rating?: number;
+  ratingComment?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,6 +69,16 @@ const OrderSchema = new Schema<IOrder>({
     required: false,
   },
   rejectionReason: {
+    type: String,
+    required: false,
+  },
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5,
+    required: false,
+  },
+  ratingComment: {
     type: String,
     required: false,
   },

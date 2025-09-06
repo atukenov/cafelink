@@ -7,6 +7,111 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { ScheduledShift, User } from '@/lib/types';
 
+function WeeklyCalendar({ 
+  employeeId, 
+  shifts, 
+  employees, 
+  getEmployeeName 
+}: { 
+  employeeId: string; 
+  shifts: ScheduledShift[]; 
+  employees: User[];
+  getEmployeeName: (id: string) => string;
+}) {
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+  
+  const currentEmployeeShifts = shifts.filter(shift => shift.employeeId === employeeId && shift.isActive);
+  const otherShifts = shifts.filter(shift => shift.employeeId !== employeeId && shift.isActive);
+  
+  const getShiftForTimeSlot = (day: number, hour: number) => {
+    const currentShift = currentEmployeeShifts.find(shift => {
+      if (!shift.weekdays.includes(day)) return false;
+      const startHour = parseInt(shift.startTime.split(':')[0]);
+      const endHour = parseInt(shift.endTime.split(':')[0]);
+      return hour >= startHour && hour < endHour;
+    });
+    
+    const otherShift = otherShifts.find(shift => {
+      if (!shift.weekdays.includes(day)) return false;
+      const startHour = parseInt(shift.startTime.split(':')[0]);
+      const endHour = parseInt(shift.endTime.split(':')[0]);
+      return hour >= startHour && hour < endHour;
+    });
+    
+    return { currentShift, otherShift };
+  };
+  
+  return (
+    <div className="overflow-x-auto">
+      <div className="grid grid-cols-8 gap-1 min-w-[600px]">
+        {/* Header */}
+        <div className="p-2 text-xs font-medium text-gray-600">Time</div>
+        {weekdays.map(day => (
+          <div key={day} className="p-2 text-xs font-medium text-gray-600 text-center">
+            {day}
+          </div>
+        ))}
+        
+        {/* Time slots */}
+        {hours.map(hour => (
+          <React.Fragment key={hour}>
+            <div className="p-1 text-xs text-gray-500 border-r">
+              {hour.toString().padStart(2, '0')}:00
+            </div>
+            {weekdays.map((_, dayIndex) => {
+              const { currentShift, otherShift } = getShiftForTimeSlot(dayIndex, hour);
+              
+              return (
+                <div 
+                  key={`${hour}-${dayIndex}`} 
+                  className={`p-1 border border-gray-100 text-xs ${
+                    currentShift 
+                      ? 'bg-blue-500 text-white font-medium' 
+                      : otherShift 
+                      ? 'bg-gray-200 text-gray-600 opacity-50'
+                      : 'bg-white'
+                  }`}
+                  title={
+                    currentShift 
+                      ? `${getEmployeeName(employeeId)} (${currentShift.startTime}-${currentShift.endTime})`
+                      : otherShift
+                      ? `${getEmployeeName(otherShift.employeeId)} (${otherShift.startTime}-${otherShift.endTime})`
+                      : ''
+                  }
+                >
+                  {currentShift && hour === parseInt(currentShift.startTime.split(':')[0]) && (
+                    <div className="truncate">
+                      {getEmployeeName(employeeId).split(' ')[0]}
+                    </div>
+                  )}
+                  {otherShift && hour === parseInt(otherShift.startTime.split(':')[0]) && !currentShift && (
+                    <div className="truncate">
+                      {getEmployeeName(otherShift.employeeId).split(' ')[0]}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </React.Fragment>
+        ))}
+      </div>
+      
+      {/* Legend */}
+      <div className="mt-4 flex gap-4 text-xs">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 bg-blue-500 rounded"></div>
+          <span>Selected Employee</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 bg-gray-200 rounded"></div>
+          <span>Other Employees</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminShiftsPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
@@ -190,6 +295,21 @@ export default function AdminShiftsPage() {
             ))}
           </select>
         </div>
+
+        {/* Weekly Calendar View */}
+        {selectedEmployeeId && (
+          <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Weekly Schedule - {getEmployeeName(selectedEmployeeId)}
+            </h3>
+            <WeeklyCalendar 
+              employeeId={selectedEmployeeId} 
+              shifts={shifts} 
+              employees={employees}
+              getEmployeeName={getEmployeeName}
+            />
+          </div>
+        )}
 
         {shifts.length === 0 ? (
           <div className="text-center py-12">

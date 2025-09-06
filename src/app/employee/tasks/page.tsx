@@ -6,9 +6,12 @@ import { ArrowLeft, CheckSquare, Square, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { Task } from '@/lib/types';
+import { socketManager } from '@/lib/socket';
+import { useToast } from '@/components/Toast';
 
 export default function EmployeeTasksPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +32,22 @@ export default function EmployeeTasksPage() {
 
     setUser(parsedUser);
     loadTasks();
+
+    const socket = socketManager.connect();
+    socketManager.onTaskUpdate((taskData) => {
+      if (taskData.type === 'created') {
+        loadTasks(); // Reload tasks when new ones are created
+        showToast({
+          type: 'info',
+          title: 'New Task',
+          message: taskData.isGlobal ? 'New global task assigned' : 'New task assigned to you',
+        });
+      }
+    });
+
+    return () => {
+      socketManager.offTaskUpdate();
+    };
   }, [router]);
 
   const loadTasks = async () => {
@@ -53,6 +72,21 @@ export default function EmployeeTasksPage() {
       await apiClient.updateTask(taskId, { 
         status: newStatus,
         employeeId 
+      });
+      
+      if (newStatus === 'done') {
+        socketManager.emitTaskUpdate({
+          type: 'completed',
+          taskId,
+          employeeId: user._id,
+          employeeName: user.name
+        });
+      }
+      
+      showToast({
+        type: 'success',
+        title: 'Task Updated',
+        message: `Task marked as ${newStatus}`,
       });
       
       await loadTasks();

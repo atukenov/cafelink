@@ -313,7 +313,14 @@ export default function EmployeeDashboardPage() {
           <Link
             href="/employee/messages"
             className="block bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
-            onClick={() => setUnreadCounts(prev => ({ ...prev, messages: 0 }))}
+            onClick={() => {
+              setUnreadCounts(prev => ({ ...prev, messages: 0 }));
+              fetch('/api/chat/mark-read', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user?._id })
+              });
+            }}
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
