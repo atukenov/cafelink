@@ -19,11 +19,28 @@ export default function MenuPage() {
     name: string;
     price: number;
   }[]>([]);
+  const [currentEmployees, setCurrentEmployees] = useState<any[]>([]);
 
   useEffect(() => {
-    loadProducts();
+    loadData();
     loadCart();
   }, []);
+
+  const loadData = async () => {
+    try {
+      const [productsData, employeesData] = await Promise.all([
+        apiClient.getProducts(),
+        apiClient.getCurrentShifts()
+      ]);
+      setProducts(productsData);
+      setCurrentEmployees(employeesData);
+    } catch (err) {
+      setError('Failed to load menu');
+      console.error('Error loading data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadProducts = async () => {
     try {

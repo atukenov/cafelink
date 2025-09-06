@@ -17,8 +17,7 @@ export default function AdminTasksPage() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     description: '',
-    employeeId: '',
-    isGlobal: true
+    assignTo: 'global'
   });
 
   useEffect(() => {
@@ -64,11 +63,11 @@ export default function AdminTasksPage() {
     try {
       await apiClient.createTask({
         description: formData.description,
-        employeeId: formData.isGlobal ? undefined : formData.employeeId
+        employeeId: formData.assignTo === 'global' ? undefined : formData.assignTo
       });
       
       setShowForm(false);
-      setFormData({ description: '', employeeId: '', isGlobal: true });
+      setFormData({ description: '', assignTo: 'global' });
       await loadData();
 
       const response = await fetch('/api/socket', {
@@ -254,46 +253,31 @@ export default function AdminTasksPage() {
                   />
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="isGlobal"
-                    checked={formData.isGlobal}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isGlobal: e.target.checked }))}
-                    className="mr-2"
-                  />
-                  <label htmlFor="isGlobal" className="text-sm text-gray-700">
-                    Global task (visible to all employees)
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Assign Task To
                   </label>
+                  <select
+                    value={formData.assignTo}
+                    onChange={(e) => setFormData(prev => ({ ...prev, assignTo: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    required
+                  >
+                    <option value="global">Global (All Employees)</option>
+                    {employees.map(employee => (
+                      <option key={employee._id} value={employee._id}>
+                        {employee.name} ({employee.role})
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                {!formData.isGlobal && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Assign to Employee
-                    </label>
-                    <select
-                      value={formData.employeeId}
-                      onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      required={!formData.isGlobal}
-                    >
-                      <option value="">Select Employee</option>
-                      {employees.map(employee => (
-                        <option key={employee._id} value={employee._id}>
-                          {employee.name} ({employee.role})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
 
                 <div className="flex gap-2 pt-4">
                   <button
                     type="button"
                     onClick={() => {
                       setShowForm(false);
-                      setFormData({ description: '', employeeId: '', isGlobal: true });
+                      setFormData({ description: '', assignTo: 'global' });
                     }}
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg"
                   >

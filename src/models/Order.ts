@@ -3,6 +3,10 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IOrderItem {
   productId: string;
   quantity: number;
+  additionalItems?: {
+    additionalItemId: string;
+    quantity: number;
+  }[];
 }
 
 export interface IOrder extends Document {
@@ -14,6 +18,7 @@ export interface IOrder extends Document {
   customerName?: string;
   customerPhone?: string;
   estimatedTime?: number;
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +64,10 @@ const OrderSchema = new Schema<IOrder>({
   },
   estimatedTime: {
     type: Number,
+    required: false,
+  },
+  rejectionReason: {
+    type: String,
     required: false,
   },
   createdAt: {
