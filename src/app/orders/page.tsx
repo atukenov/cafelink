@@ -8,6 +8,96 @@ import { apiClient } from '@/lib/api';
 import { Order } from '@/lib/types';
 import { socketManager } from '@/lib/socket';
 import { useToast } from '@/components/Toast';
+import StarRating from '@/components/StarRating';
+
+function RatingModal({ orderId, onRatingSubmitted }: { orderId: string; onRatingSubmitted: () => void }) {
+  const [showModal, setShowModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const submitRating = async () => {
+    if (rating === 0) return;
+    
+    setSubmitting(true);
+    try {
+      const response = await fetch('/api/ratings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          rating,
+          comment: comment.trim() || undefined
+        })
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        onRatingSubmitted();
+      }
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <button
+        onClick={() => setShowModal(true)}
+        className="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg"
+      >
+        Rate Order
+      </button>
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full p-6">
+            <h3 className="text-lg font-semibold mb-4">Rate Your Experience</h3>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">How was your order?</p>
+              <div className="flex justify-center">
+                <StarRating rating={rating} onRatingChange={setRating} size="lg" />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Comment (optional)
+              </label>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Tell us about your experience..."
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg"
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitRating}
+                disabled={rating === 0 || submitting}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg disabled:opacity-50"
+              >
+                {submitting ? 'Submitting...' : 'Submit'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -212,6 +302,29 @@ export default function OrdersPage() {
                       <p className="text-sm font-medium text-red-800">Order Rejected</p>
                       <p className="text-sm text-red-700">{order.rejectionReason}</p>
                     </div>
+                  </div>
+                )}
+
+                {/* Rating Section for Completed Orders */}
+                {order.status === 'ready' && !order.rating && (
+                  <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm font-medium text-green-800 mb-2">Order Ready!</p>
+                    <p className="text-sm text-green-700 mb-3">Please rate your experience:</p>
+                    <RatingModal orderId={order._id} onRatingSubmitted={() => loadOrders(client)} />
+                  </div>
+                )}
+
+                {/* Show Rating if Already Submitted */}
+                {order.rating && (
+                  <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm font-medium text-blue-800">Your Rating:</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <StarRating rating={order.rating} readonly size="sm" />
+                      <span className="text-sm text-blue-700">({order.rating}/5)</span>
+                    </div>
+                    {order.ratingComment && (
+                      <p className="text-sm text-blue-700 mt-1">"{order.ratingComment}"</p>
+                    )}
                   </div>
                 )}
                 

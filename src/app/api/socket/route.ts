@@ -16,6 +16,12 @@ export async function POST(request: NextRequest) {
         case 'new-message':
           (global as any).io.to('employees').emit('new-message', data);
           break;
+        case 'user-typing':
+          (global as any).io.to('employees').emit('user-typing', data);
+          break;
+        case 'mark-messages-read':
+          (global as any).io.to('employees').emit('messages-read', data);
+          break;
         case 'task-update':
           (global as any).io.to('employees').emit('task-update', data);
           break;

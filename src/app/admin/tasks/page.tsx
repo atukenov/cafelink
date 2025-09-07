@@ -6,9 +6,12 @@ import { ArrowLeft, Plus, CheckSquare, Square, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { Task, User } from '@/lib/types';
+import { socketManager } from '@/lib/socket';
+import { useToast } from '@/components/Toast';
 
 export default function AdminTasksPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [employees, setEmployees] = useState<User[]>([]);
@@ -35,6 +38,22 @@ export default function AdminTasksPage() {
 
     setUser(parsedUser);
     loadData();
+
+    const socket = socketManager.connect();
+    socketManager.onTaskUpdate((taskData) => {
+      if (taskData.type === 'completed') {
+        loadData(); // Reload tasks when employees complete them
+        showToast({
+          type: 'success',
+          title: 'Task Completed',
+          message: `${taskData.employeeName} completed a task`,
+        });
+      }
+    });
+
+    return () => {
+      socketManager.offTaskUpdate();
+    };
   }, [router]);
 
   const loadData = async () => {
@@ -61,27 +80,27 @@ export default function AdminTasksPage() {
     }
 
     try {
-      await apiClient.createTask({
+      const newTask = await apiClient.createTask({
         description: formData.description,
+        employeeId: formData.assignTo === 'global' ? undefined : formData.assignTo
+      });
+      
+      socketManager.emitTaskUpdate({
+        type: 'created',
+        task: newTask,
+        isGlobal: formData.assignTo === 'global',
         employeeId: formData.assignTo === 'global' ? undefined : formData.assignTo
       });
       
       setShowForm(false);
       setFormData({ description: '', assignTo: 'global' });
       await loadData();
-
-      const response = await fetch('/api/socket', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'task-update',
-          data: { type: 'new-task', task: formData }
-        })
+      
+      showToast({
+        type: 'success',
+        title: 'Task Created',
+        message: 'Task has been assigned successfully',
       });
-
-      if (!response.ok) {
-        console.error('Failed to broadcast task update');
-      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create task');
     }
