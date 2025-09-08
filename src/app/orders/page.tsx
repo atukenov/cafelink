@@ -1,34 +1,46 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Clock, CheckCircle, Coffee, XCircle, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import { Order } from '@/lib/types';
-import { socketManager } from '@/lib/socket';
-import { useToast } from '@/components/Toast';
-import StarRating from '@/components/StarRating';
+import StarRating from "@/components/StarRating";
+import { useToast } from "@/components/Toast";
+import { socketManager } from "@/lib/socket";
+import { Order } from "@/lib/types";
+import {
+  ArrowLeft,
+  CheckCircle,
+  Clock,
+  Coffee,
+  User,
+  XCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-function RatingModal({ orderId, onRatingSubmitted }: { orderId: string; onRatingSubmitted: () => void }) {
+function RatingModal({
+  orderId,
+  onRatingSubmitted,
+}: {
+  orderId: string;
+  onRatingSubmitted: () => void;
+}) {
   const [showModal, setShowModal] = useState(false);
   const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const submitRating = async () => {
     if (rating === 0) return;
-    
+
     setSubmitting(true);
     try {
-      const response = await fetch('/api/ratings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/ratings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId,
           rating,
-          comment: comment.trim() || undefined
-        })
+          comment: comment.trim() || undefined,
+        }),
       });
 
       if (response.ok) {
@@ -36,7 +48,7 @@ function RatingModal({ orderId, onRatingSubmitted }: { orderId: string; onRating
         onRatingSubmitted();
       }
     } catch (error) {
-      console.error('Error submitting rating:', error);
+      console.error("Error submitting rating:", error);
     } finally {
       setSubmitting(false);
     }
@@ -55,11 +67,15 @@ function RatingModal({ orderId, onRatingSubmitted }: { orderId: string; onRating
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-sm w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Rate Your Experience</h3>
-            
+
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">How was your order?</p>
               <div className="flex justify-center">
-                <StarRating rating={rating} onRatingChange={setRating} size="lg" />
+                <StarRating
+                  rating={rating}
+                  onRatingChange={setRating}
+                  size="lg"
+                />
               </div>
             </div>
 
@@ -89,7 +105,7 @@ function RatingModal({ orderId, onRatingSubmitted }: { orderId: string; onRating
                 disabled={rating === 0 || submitting}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg disabled:opacity-50"
               >
-                {submitting ? 'Submitting...' : 'Submit'}
+                {submitting ? "Submitting..." : "Submit"}
               </button>
             </div>
           </div>
@@ -102,16 +118,20 @@ function RatingModal({ orderId, onRatingSubmitted }: { orderId: string; onRating
 export default function OrdersPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [client, setClient] = useState<{ _id: string; name: string; phone: string } | null>(null);
+  const [client, setClient] = useState<{
+    _id: string;
+    name: string;
+    phone: string;
+  } | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const clientData = localStorage.getItem('client');
+    const clientData = localStorage.getItem("client");
     if (!clientData) {
-      localStorage.setItem('returnUrl', '/orders');
-      router.push('/client/login');
+      localStorage.setItem("returnUrl", "/orders");
+      router.push("/client/login");
       return;
     }
 
@@ -121,23 +141,35 @@ export default function OrdersPage() {
 
     const socket = socketManager.connect();
     socketManager.onOrderUpdated((data) => {
-      setOrders(prev => prev.map(order => 
-        order._id === data.orderId 
-          ? { ...order, status: data.status, estimatedTime: data.estimatedTime, updatedAt: new Date().toISOString() }
-          : order
-      ));
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === data.orderId
+            ? {
+                ...order,
+                status: data.status,
+                estimatedTime: data.estimatedTime,
+                updatedAt: new Date().toISOString(),
+              }
+            : order
+        )
+      );
 
       const statusMessages = {
-        'viewed': 'Your order has been viewed by staff',
-        'accepted': 'Your order is being prepared',
-        'ready': 'Your order is ready for pickup!',
-        'rejected': 'Your order has been rejected'
+        viewed: "Your order has been viewed by staff",
+        accepted: "Your order is being prepared",
+        ready: "Your order is ready for pickup!",
+        rejected: "Your order has been rejected",
       };
 
       if (statusMessages[data.status as keyof typeof statusMessages]) {
         showToast({
-          type: data.status === 'rejected' ? 'error' : data.status === 'ready' ? 'success' : 'info',
-          title: 'Order Update',
+          type:
+            data.status === "rejected"
+              ? "error"
+              : data.status === "ready"
+              ? "success"
+              : "info",
+          title: "Order Update",
           message: statusMessages[data.status as keyof typeof statusMessages],
         });
       }
@@ -150,18 +182,23 @@ export default function OrdersPage() {
 
   const loadOrders = async (clientData: { phone: string }) => {
     try {
-      const response = await fetch(`/api/orders/client/${encodeURIComponent(clientData.phone)}`);
+      const response = await fetch(
+        `/api/orders/client/${encodeURIComponent(clientData.phone)}`
+      );
       if (response.ok) {
         const data = await response.json();
-        setOrders(data.sort((a: Order, b: Order) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        ));
+        setOrders(
+          data.sort(
+            (a: Order, b: Order) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        );
       } else {
         setOrders([]);
       }
     } catch (err) {
-      setError('Failed to load orders');
-      console.error('Error loading orders:', err);
+      setError("Failed to load orders");
+      console.error("Error loading orders:", err);
     } finally {
       setLoading(false);
     }
@@ -169,15 +206,15 @@ export default function OrdersPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'received':
+      case "received":
         return <Clock className="w-5 h-5 text-blue-500" />;
-      case 'viewed':
+      case "viewed":
         return <Clock className="w-5 h-5 text-yellow-500" />;
-      case 'accepted':
+      case "accepted":
         return <Coffee className="w-5 h-5 text-green-500" />;
-      case 'ready':
+      case "ready":
         return <CheckCircle className="w-5 h-5 text-purple-500" />;
-      case 'rejected':
+      case "rejected":
         return <XCircle className="w-5 h-5 text-red-500" />;
       default:
         return <Clock className="w-5 h-5 text-gray-500" />;
@@ -186,35 +223,35 @@ export default function OrdersPage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'received':
-        return 'Order Received';
-      case 'viewed':
-        return 'Being Reviewed';
-      case 'accepted':
-        return 'Preparing';
-      case 'ready':
-        return 'Ready for Pickup';
-      case 'rejected':
-        return 'Rejected';
+      case "received":
+        return "Order Received";
+      case "viewed":
+        return "Being Reviewed";
+      case "accepted":
+        return "Preparing";
+      case "ready":
+        return "Ready for Pickup";
+      case "rejected":
+        return "Rejected";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'received':
-        return 'text-blue-600 bg-blue-50';
-      case 'viewed':
-        return 'text-yellow-600 bg-yellow-50';
-      case 'accepted':
-        return 'text-green-600 bg-green-50';
-      case 'ready':
-        return 'text-purple-600 bg-purple-50';
-      case 'rejected':
-        return 'text-red-600 bg-red-50';
+      case "received":
+        return "text-blue-600 bg-blue-50";
+      case "viewed":
+        return "text-yellow-600 bg-yellow-50";
+      case "accepted":
+        return "text-green-600 bg-green-50";
+      case "ready":
+        return "text-purple-600 bg-purple-50";
+      case "rejected":
+        return "text-red-600 bg-red-50";
       default:
-        return 'text-gray-600 bg-gray-50';
+        return "text-gray-600 bg-gray-50";
     }
   };
 
@@ -265,8 +302,12 @@ export default function OrdersPage() {
             <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
               <Coffee className="w-12 h-12 text-gray-400" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">No orders yet</h2>
-            <p className="text-gray-600 mb-6">Start by ordering some delicious coffee!</p>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              No orders yet
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Start by ordering some delicious coffee!
+            </p>
             <Link
               href="/menu"
               className="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
@@ -277,15 +318,28 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
-              <Link
+              <div
                 key={order._id}
-                href={`/orders/${order._id}`}
-                className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
+                onClick={(e) => {
+                  // If the click was on the rate order button or its parent modal, don't navigate
+                  if (
+                    (e.target as HTMLElement).closest(".rating-modal-container")
+                  ) {
+                    e.preventDefault();
+                    return;
+                  }
+                  router.push(`/orders/${order._id}`);
+                }}
+                className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     {getStatusIcon(order.status)}
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
                       {getStatusText(order.status)}
                     </span>
                   </div>
@@ -295,56 +349,79 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Rejection Reason Display */}
-                {order.status === 'rejected' && order.rejectionReason && (
+                {order.status === "rejected" && order.rejectionReason && (
                   <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
                     <XCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-red-800">Order Rejected</p>
-                      <p className="text-sm text-red-700">{order.rejectionReason}</p>
+                      <p className="text-sm font-medium text-red-800">
+                        Order Rejected
+                      </p>
+                      <p className="text-sm text-red-700">
+                        {order.rejectionReason}
+                      </p>
                     </div>
                   </div>
                 )}
 
                 {/* Rating Section for Completed Orders */}
-                {order.status === 'ready' && !order.rating && (
-                  <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm font-medium text-green-800 mb-2">Order Ready!</p>
-                    <p className="text-sm text-green-700 mb-3">Please rate your experience:</p>
-                    <RatingModal orderId={order._id} onRatingSubmitted={() => loadOrders(client)} />
+                {order.status === "ready" && !order.rating && (
+                  <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg rating-modal-container">
+                    <p className="text-sm font-medium text-green-800 mb-2">
+                      Order Ready!
+                    </p>
+                    <p className="text-sm text-green-700 mb-3">
+                      Please rate your experience:
+                    </p>
+                    <RatingModal
+                      orderId={order._id}
+                      onRatingSubmitted={() => {
+                        loadOrders(client);
+                        router.push(`/orders/${order._id}`);
+                      }}
+                    />
                   </div>
                 )}
 
                 {/* Show Rating if Already Submitted */}
                 {order.rating && (
                   <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm font-medium text-blue-800">Your Rating:</p>
+                    <p className="text-sm font-medium text-blue-800">
+                      Your Rating:
+                    </p>
                     <div className="flex items-center gap-2 mt-1">
                       <StarRating rating={order.rating} readonly size="sm" />
-                      <span className="text-sm text-blue-700">({order.rating}/5)</span>
+                      <span className="text-sm text-blue-700">
+                        ({order.rating}/5)
+                      </span>
                     </div>
                     {order.ratingComment && (
-                      <p className="text-sm text-blue-700 mt-1">"{order.ratingComment}"</p>
+                      <p className="text-sm text-blue-700 mt-1">
+                        &quot;{order.ratingComment}&quot;
+                      </p>
                     )}
                   </div>
                 )}
-                
+
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-semibold text-gray-800">
                       Order #{order._id.slice(-6)}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                      {order.items.length} item
+                      {order.items.length !== 1 ? "s" : ""}
                     </p>
-                    {order.estimatedTime && order.status === 'accepted' && (
+                    {order.estimatedTime && order.status === "accepted" && (
                       <p className="text-sm text-green-600">
                         Ready in ~{order.estimatedTime} minutes
                       </p>
                     )}
                   </div>
-                  <p className="font-bold text-amber-600">{order.totalPrice} ₸</p>
+                  <p className="font-bold text-amber-600">
+                    {order.totalPrice} ₸
+                  </p>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
