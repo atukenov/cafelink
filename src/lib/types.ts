@@ -3,6 +3,22 @@ export interface User {
   role: 'client' | 'employee' | 'admin' | 'administrator' | 'author';
   name: string;
   phone: string;
+  coffeeShopId?: string;
+  createdAt: string;
+}
+
+export interface CoffeeShop {
+  _id: string;
+  name: string;
+  location: string;
+  address: string;
+  adminId: string;
+  isActive: boolean;
+  settings: {
+    timezone: string;
+    currency: string;
+    theme: string;
+  };
   createdAt: string;
 }
 
@@ -11,6 +27,7 @@ export interface AdditionalItem {
   name: string;
   price: number;
   productId?: string;
+  coffeeShopId: string;
   createdAt: string;
 }
 
@@ -19,6 +36,7 @@ export interface Product {
   name: string;
   price: number;
   imageUrl: string;
+  coffeeShopId: string;
   additionalItems?: AdditionalItem[];
   createdAt: string;
 }
@@ -35,6 +53,7 @@ export interface OrderItem {
 export interface Order {
   _id: string;
   userId?: string;
+  coffeeShopId: string;
   items: OrderItem[];
   status: 'received' | 'viewed' | 'accepted' | 'rejected' | 'ready';
   totalPrice: number;
@@ -51,6 +70,7 @@ export interface Order {
 export interface Shift {
   _id: string;
   employeeId: string;
+  coffeeShopId: string;
   startTime: string;
   endTime?: string;
 }
@@ -61,6 +81,7 @@ export interface Task {
   status: 'pending' | 'done';
   employeeId?: string;
   createdBy?: string;
+  coffeeShopId: string;
   isGlobal: boolean;
   createdAt: string;
 }
@@ -69,6 +90,7 @@ export interface Message {
   _id: string;
   title: string;
   body: string;
+  coffeeShopId: string;
   createdAt: string;
 }
 
@@ -85,6 +107,7 @@ export interface CartItem extends Product {
 export interface ScheduledShift {
   _id: string;
   employeeId: string;
+  coffeeShopId: string;
   weekdays: number[];
   startTime: string;
   endTime: string;
@@ -98,6 +121,7 @@ export interface Promotion {
   title: string;
   description: string;
   imageUrl?: string;
+  coffeeShopId: string;
   isActive: boolean;
   validFrom: string;
   validTo?: string;
@@ -108,6 +132,7 @@ export interface Promotion {
 export interface EmployeeStats {
   _id: string;
   employeeId: string;
+  coffeeShopId: string;
   tasksCompleted: number;
   tasksAssigned: number;
   shiftsAttended: number;
@@ -116,4 +141,17 @@ export interface EmployeeStats {
   averageOrderTime: number;
   rating: number;
   lastUpdated: string;
+}
+
+export interface ChatMessage {
+  _id: string;
+  userId: string;
+  userName: string;
+  message: string;
+  coffeeShopId: string;
+  readBy: {
+    userId: string;
+    readAt: Date;
+  }[];
+  createdAt: string;
 }

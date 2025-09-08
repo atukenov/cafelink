@@ -6,6 +6,7 @@ export interface IPromotion extends Document {
   title: string;
   description: string;
   imageUrl?: string;
+  coffeeShopId: string;
   isActive: boolean;
   validFrom: Date;
   validTo?: Date;
@@ -18,6 +19,7 @@ const PromotionSchema = new Schema<IPromotion>({
   title: { type: String, required: true },
   description: { type: String, required: true },
   imageUrl: { type: String },
+  coffeeShopId: { type: String, required: true },
   isActive: { type: Boolean, default: true },
   validFrom: { type: Date, required: true },
   validTo: { type: Date },

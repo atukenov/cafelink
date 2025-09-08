@@ -6,6 +6,7 @@ export interface IUser extends Document {
   name: string;
   phone: string;
   pin?: string;
+  coffeeShopId?: string;
   createdAt: Date;
 }
 
@@ -29,6 +30,10 @@ const UserSchema = new Schema<IUser>({
     required: function() {
       return ['employee', 'admin', 'administrator', 'author'].includes(this.role);
     },
+  },
+  coffeeShopId: {
+    type: String,
+    required: false,
   },
   createdAt: {
     type: Date,

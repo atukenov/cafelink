@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from '@/components/Toast';
+import { ShopProvider } from '@/contexts/ShopContext';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,7 +31,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-gray-50 min-h-screen`}>
         <ToastProvider>
-          {children}
+          <ShopProvider>
+            {children}
+          </ShopProvider>
         </ToastProvider>
         <script
           dangerouslySetInnerHTML={{

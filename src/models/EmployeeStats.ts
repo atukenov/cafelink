@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IEmployeeStats extends Document {
   _id: string;
   employeeId: string;
+  coffeeShopId: string;
   tasksCompleted: number;
   tasksAssigned: number;
   shiftsAttended: number;
@@ -18,7 +19,10 @@ const EmployeeStatsSchema = new Schema<IEmployeeStats>({
   employeeId: {
     type: String,
     required: true,
-    unique: true,
+  },
+  coffeeShopId: {
+    type: String,
+    required: true,
   },
   tasksCompleted: {
     type: Number,
@@ -58,5 +62,7 @@ const EmployeeStatsSchema = new Schema<IEmployeeStats>({
     default: Date.now,
   },
 });
+
+EmployeeStatsSchema.index({ employeeId: 1, coffeeShopId: 1 }, { unique: true });
 
 export default mongoose.models.EmployeeStats || mongoose.model<IEmployeeStats>('EmployeeStats', EmployeeStatsSchema);

@@ -65,11 +65,12 @@ export class ApiClient {
     return this.request('/users/me');
   }
 
-  async getProducts() {
-    return this.request('/products');
+  async getProducts(shopId?: string) {
+    const params = shopId ? `?shopId=${shopId}` : '';
+    return this.request(`/products${params}`);
   }
 
-  async createProduct(data: { name: string; price: number; imageUrl: string; additionalItems?: string[] }) {
+  async createProduct(data: { name: string; price: number; imageUrl: string; coffeeShopId: string; additionalItems?: string[] }) {
     return this.request('/products', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -82,6 +83,7 @@ export class ApiClient {
     totalPrice: number;
     customerName?: string;
     customerPhone?: string;
+    coffeeShopId: string;
   }) {
     return this.request('/orders', {
       method: 'POST',
@@ -122,11 +124,12 @@ export class ApiClient {
     return this.request(`/shifts/${employeeId}`);
   }
 
-  async getTasks() {
-    return this.request('/tasks');
+  async getTasks(shopId?: string) {
+    const params = shopId ? `?shopId=${shopId}` : '';
+    return this.request(`/tasks${params}`);
   }
 
-  async createTask(taskData: { description: string; employeeId?: string }) {
+  async createTask(taskData: { description: string; employeeId?: string; coffeeShopId: string }) {
     return this.request('/tasks', {
       method: 'POST',
       body: JSON.stringify(taskData),
@@ -151,11 +154,12 @@ export class ApiClient {
     });
   }
 
-  async getAdditionalItems() {
-    return this.request('/additional-items');
+  async getAdditionalItems(shopId?: string) {
+    const params = shopId ? `?shopId=${shopId}` : '';
+    return this.request(`/additional-items${params}`);
   }
 
-  async createAdditionalItem(data: { name: string; price: number; productId?: string }) {
+  async createAdditionalItem(data: { name: string; price: number; productId?: string; coffeeShopId: string }) {
     return this.request('/additional-items', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -271,8 +275,46 @@ export class ApiClient {
     return this.request(`/shifts/current?employeeId=${employeeId}`);
   }
 
-  async getUnreadCounts(employeeId: string) {
-    return this.request(`/unread-counts?employeeId=${employeeId}`);
+  async getUnreadCounts(employeeId: string, shopId?: string) {
+    const params = new URLSearchParams({ employeeId });
+    if (shopId) params.append('shopId', shopId);
+    return this.request(`/unread-counts?${params.toString()}`);
+  }
+
+  async markMessagesAsRead(userId: string, shopId?: string) {
+    const params = new URLSearchParams({ userId });
+    if (shopId) params.append('shopId', shopId);
+    return this.request(`/chat/mark-read?${params.toString()}`, {
+      method: 'POST',
+    });
+  }
+
+  async getCoffeeShops() {
+    return this.request('/coffee-shops');
+  }
+
+  async getCoffeeShop(shopId: string) {
+    return this.request(`/coffee-shops/${shopId}`);
+  }
+
+  async createCoffeeShop(data: { name: string; location: string; address: string; adminId: string }) {
+    return this.request('/coffee-shops', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCoffeeShop(id: string, data: { name: string; location: string; address: string; isActive: boolean }) {
+    return this.request(`/coffee-shops/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCoffeeShop(id: string) {
+    return this.request(`/coffee-shops/${id}`, {
+      method: 'DELETE',
+    });
   }
 }
 

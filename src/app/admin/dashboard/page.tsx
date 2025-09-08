@@ -1,44 +1,21 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Shield, Users, Coffee, UserCheck, Settings, Clock, CheckSquare, MessageSquare, BarChart3, Megaphone } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { ArrowLeft, Shield, Users, Coffee, UserCheck, Settings, Clock, CheckSquare, MessageSquare, BarChart3, Megaphone, MapPin } from 'lucide-react';
+import ShopSelector from '@/components/ui/ShopSelector';
+import { useAuth } from '@/hooks/useAuth';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { Card, ActionCard } from '@/components/ui/Card';
 
 export default function AdminDashboardPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
+  const { user, loading, logout } = useAuth({ 
+    requiredRoles: ['admin', 'author'],
+    redirectTo: '/staff-login'
+  });
 
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-      router.push('/admin/login');
-      return;
-    }
-
-    const parsedUser = JSON.parse(userData);
-    if (!['admin', 'author'].includes(parsedUser.role)) {
-      router.push('/admin/login');
-      return;
-    }
-
-    setUser(parsedUser);
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    router.push('/');
-  };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+  if (loading || !user) {
+    return <LoadingSpinner text="Loading admin dashboard..." />;
   }
 
   return (
@@ -52,7 +29,7 @@ export default function AdminDashboardPage() {
             <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="text-sm text-gray-600 hover:text-gray-800"
           >
             Logout
@@ -61,7 +38,9 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="max-w-md mx-auto p-4">
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <ShopSelector />
+        
+        <Card className="p-6 mb-6">
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-blue-600" />
@@ -70,128 +49,80 @@ export default function AdminDashboardPage() {
             <p className="text-blue-600 font-medium">Coffee Shop Admin</p>
             <p className="text-sm text-gray-600 mt-2">Manage your coffee shop operations</p>
           </div>
-        </div>
+        </Card>
 
         <div className="space-y-4">
-          <Link
+          <ActionCard
+            icon={Users}
+            title="Employee Management"
+            description="Add employees and assign roles"
             href="/admin/employees"
-            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Employee Management</h3>
-                <p className="text-sm text-gray-600">Add employees and assign roles</p>
-              </div>
-            </div>
-          </Link>
+            iconColor="text-green-600"
+          />
 
-          <Link
+          <ActionCard
+            icon={Coffee}
+            title="Menu Management"
+            description="Manage products and additional items"
             href="/admin/menu"
-            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <Coffee className="w-6 h-6 text-amber-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Menu Management</h3>
-                <p className="text-sm text-gray-600">Manage products and additional items</p>
-              </div>
-            </div>
-          </Link>
+            iconColor="text-amber-600"
+          />
 
-          <Link
+          <ActionCard
+            icon={Clock}
+            title="Shift Management"
+            description="Schedule employee shifts"
             href="/admin/shifts"
-            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Clock className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Shift Management</h3>
-                <p className="text-sm text-gray-600">Schedule employee shifts</p>
-              </div>
-            </div>
-          </Link>
+            iconColor="text-blue-600"
+          />
 
-          <Link
+          <ActionCard
+            icon={CheckSquare}
+            title="Task Management"
+            description="Create and assign tasks"
             href="/admin/tasks"
-            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                <CheckSquare className="w-6 h-6 text-indigo-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Task Management</h3>
-                <p className="text-sm text-gray-600">Create and assign tasks</p>
-              </div>
-            </div>
-          </Link>
+            iconColor="text-indigo-600"
+          />
 
-          <Link
+          <ActionCard
+            icon={MessageSquare}
+            title="Live Messaging"
+            description="Send announcements to employees"
             href="/admin/messages"
-            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <MessageSquare className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Live Messaging</h3>
-                <p className="text-sm text-gray-600">Send announcements to employees</p>
-              </div>
-            </div>
-          </Link>
+            iconColor="text-purple-600"
+          />
 
-          <Link
+          <ActionCard
+            icon={BarChart3}
+            title="Employee Statistics"
+            description="View performance metrics"
             href="/admin/statistics"
-            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 text-teal-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Employee Statistics</h3>
-                <p className="text-sm text-gray-600">View performance metrics</p>
-              </div>
-            </div>
-          </Link>
+            iconColor="text-teal-600"
+          />
 
-          <Link
+          <ActionCard
+            icon={Megaphone}
+            title="Sales & News"
+            description="Create promotions for clients"
             href="/admin/promotions"
-            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                <Megaphone className="w-6 h-6 text-orange-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Sales & News</h3>
-                <p className="text-sm text-gray-600">Create promotions for clients</p>
-              </div>
-            </div>
-          </Link>
+            iconColor="text-orange-600"
+          />
 
-          <Link
+          <ActionCard
+            icon={MapPin}
+            title="Coffee Shops"
+            description="Manage multiple coffee shop locations"
+            href="/admin/shops"
+            iconColor="text-indigo-600"
+          />
+
+          <ActionCard
+            icon={Settings}
+            title="Order Management"
+            description="View and manage customer orders"
             href="/employee/orders"
-            className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                <Settings className="w-6 h-6 text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800">Order Management</h3>
-                <p className="text-sm text-gray-600">View and manage customer orders</p>
-              </div>
-            </div>
-          </Link>
+            iconColor="text-gray-600"
+          />
         </div>
 
         <div className="mt-8 bg-blue-50 rounded-xl p-4">
