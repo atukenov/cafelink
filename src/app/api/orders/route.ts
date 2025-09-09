@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     
-    const { userId, items, totalPrice, customerName, customerPhone } = await request.json();
+    const { userId, items, totalPrice, customerName, customerPhone, coffeeShopId } = await request.json();
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -22,8 +22,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!coffeeShopId) {
+      return NextResponse.json(
+        { error: 'Coffee shop ID is required' },
+        { status: 400 }
+      );
+    }
+
     const order = new Order({
       userId,
+      coffeeShopId,
       items,
       totalPrice,
       customerName,
@@ -42,11 +50,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await dbConnect();
     
-    const orders = await Order.find({}).sort({ createdAt: -1 });
+    const { searchParams } = new URL(request.url);
+    const shopId = searchParams.get('shopId');
+    
+    const filter = shopId ? { coffeeShopId: shopId } : {};
+    const orders = await Order.find(filter).sort({ createdAt: -1 });
     return NextResponse.json(orders);
   } catch (error) {
     console.error('Get orders error:', error);

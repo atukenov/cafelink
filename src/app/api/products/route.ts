@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await dbConnect();
     
-    const products = await Product.find({}).sort({ createdAt: -1 });
+    const { searchParams } = new URL(request.url);
+    const shopId = searchParams.get('shopId');
+    
+    const filter = shopId ? { coffeeShopId: shopId } : {};
+    const products = await Product.find(filter).sort({ createdAt: -1 });
     
     const AdditionalItem = (await import('@/models/AdditionalItem')).default;
-    const additionalItems = await AdditionalItem.find({});
+    const additionalItemsFilter = shopId ? { coffeeShopId: shopId } : {};
+    const additionalItems = await AdditionalItem.find(additionalItemsFilter);
     
     const productsWithAdditionalItems = products.map(product => ({
       ...product.toObject(),
@@ -35,7 +40,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     
-    const { name, price, imageUrl, additionalItems } = await request.json();
+    const { name, price, imageUrl, coffeeShopId, additionalItems } = await request.json();
 
     if (!name || !price || !imageUrl) {
       return NextResponse.json(
@@ -44,10 +49,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!coffeeShopId) {
+      return NextResponse.json(
+        { error: 'Coffee shop ID is required' },
+        { status: 400 }
+      );
+    }
+
     const product = new Product({
       name,
       price,
       imageUrl,
+      coffeeShopId,
       additionalItems: additionalItems || [],
     });
 

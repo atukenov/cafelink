@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IScheduledShift extends Document {
   _id: string;
   employeeId: string;
+  coffeeShopId: string;
   weekdays: number[];
   startTime: string;
   endTime: string;
@@ -12,6 +13,7 @@ export interface IScheduledShift extends Document {
 
 const ScheduledShiftSchema = new Schema<IScheduledShift>({
   employeeId: { type: String, required: true },
+  coffeeShopId: { type: String, required: true },
   weekdays: [{ type: Number, min: 0, max: 6 }],
   startTime: { type: String, required: true },
   endTime: { type: String, required: true },

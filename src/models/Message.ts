@@ -4,6 +4,7 @@ export interface IMessage extends Document {
   _id: string;
   title: string;
   body: string;
+  coffeeShopId: string;
   createdAt: Date;
 }
 
@@ -13,6 +14,10 @@ const MessageSchema = new Schema<IMessage>({
     required: true,
   },
   body: {
+    type: String,
+    required: true,
+  },
+  coffeeShopId: {
     type: String,
     required: true,
   },

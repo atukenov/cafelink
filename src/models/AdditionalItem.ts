@@ -5,6 +5,7 @@ export interface IAdditionalItem extends Document {
   name: string;
   price: number;
   productId?: string;
+  coffeeShopId: string;
   createdAt: Date;
 }
 
@@ -21,6 +22,10 @@ const AdditionalItemSchema = new Schema<IAdditionalItem>({
     type: Schema.Types.ObjectId,
     ref: 'Product',
     required: false,
+  },
+  coffeeShopId: {
+    type: String,
+    required: true,
   },
   createdAt: {
     type: Date,

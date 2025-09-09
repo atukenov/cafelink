@@ -32,6 +32,18 @@ app.prepare().then(() => {
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 
+    socket.on('join-shop', (shopId) => {
+      socket.join(`shop-${shopId}`);
+      socket.join(`shop-${shopId}-employees`);
+      console.log('Joined shop room:', shopId);
+    });
+
+    socket.on('leave-shop', (shopId) => {
+      socket.leave(`shop-${shopId}`);
+      socket.leave(`shop-${shopId}-employees`);
+      console.log('Left shop room:', shopId);
+    });
+
     socket.on('join-employee', () => {
       socket.join('employees');
       console.log('Employee joined:', socket.id);

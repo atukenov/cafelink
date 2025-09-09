@@ -6,6 +6,7 @@ export interface ITask extends Document {
   status: 'pending' | 'done';
   employeeId?: string;
   createdBy?: string;
+  coffeeShopId: string;
   isGlobal: boolean;
   createdAt: Date;
 }
@@ -27,6 +28,10 @@ const TaskSchema = new Schema<ITask>({
   createdBy: {
     type: String,
     required: false,
+  },
+  coffeeShopId: {
+    type: String,
+    required: true,
   },
   isGlobal: {
     type: Boolean,

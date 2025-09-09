@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Task from '@/models/Task';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await dbConnect();
     
-    const tasks = await Task.find({}).sort({ createdAt: -1 });
+    const { searchParams } = new URL(request.url);
+    const shopId = searchParams.get('shopId');
+    
+    const filter = shopId ? { coffeeShopId: shopId } : {};
+    const tasks = await Task.find(filter).sort({ createdAt: -1 });
     return NextResponse.json(tasks);
   } catch (error) {
     console.error('Get tasks error:', error);
@@ -21,7 +25,7 @@ export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     
-    const { description, employeeId } = await request.json();
+    const { description, employeeId, coffeeShopId } = await request.json();
 
     if (!description) {
       return NextResponse.json(
@@ -30,9 +34,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!coffeeShopId) {
+      return NextResponse.json(
+        { error: 'Coffee shop ID is required' },
+        { status: 400 }
+      );
+    }
+
     const task = new Task({
       description,
       employeeId,
+      coffeeShopId,
       status: 'pending',
       isGlobal: !employeeId,
     });

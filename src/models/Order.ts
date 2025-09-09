@@ -12,6 +12,7 @@ export interface IOrderItem {
 export interface IOrder extends Document {
   _id: string;
   userId: string;
+  coffeeShopId: string;
   items: IOrderItem[];
   status: 'received' | 'viewed' | 'accepted' | 'rejected' | 'ready';
   totalPrice: number;
@@ -45,6 +46,10 @@ const OrderSchema = new Schema<IOrder>({
   userId: {
     type: String,
     required: false,
+  },
+  coffeeShopId: {
+    type: String,
+    required: true,
   },
   items: [OrderItemSchema],
   status: {
