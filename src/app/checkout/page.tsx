@@ -8,9 +8,11 @@ import { apiClient } from '@/lib/api';
 import { CartItem } from '@/lib/types';
 import QRCode from '@/components/QRCode';
 import { socketManager } from '@/lib/socket';
+import { useShop } from '@/contexts/ShopContext';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { selectedShop } = useShop();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -84,9 +86,25 @@ export default function CheckoutPage() {
         totalPrice: getTotalPrice(),
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
+        coffeeShopId: selectedShop?._id || 'default-shop-id',
       };
 
       const order = await apiClient.createOrder(orderData);
+      
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        try {
+          await apiClient.awardPoints({
+            userId: user._id,
+            shopId: selectedShop?._id || 'default-shop-id',
+            orderId: order._id,
+            amountPaid: getTotalPrice()
+          });
+        } catch (err) {
+          console.error('Failed to award loyalty points:', err);
+        }
+      }
       
       const socket = socketManager.connect();
       socketManager.emitNewOrder(order);
