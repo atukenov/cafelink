@@ -100,11 +100,11 @@ export default function Home() {
           </Link>
           
           <Link 
-            href="/orders"
+            href="/profile"
             className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors"
           >
             <ShoppingBag className="w-5 h-5" />
-            My Orders
+            My Profile
           </Link>
         </div>
 

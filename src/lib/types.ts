@@ -3,6 +3,7 @@ export interface User {
   role: 'client' | 'employee' | 'admin' | 'administrator' | 'author';
   name: string;
   phone: string;
+  email?: string;
   coffeeShopId?: string;
   createdAt: string;
 }

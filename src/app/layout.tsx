@@ -4,6 +4,7 @@ import "./globals.css";
 import { ToastProvider } from '@/components/Toast';
 import { ShopProvider } from '@/contexts/ShopContext';
 import { SchedulerProvider } from '@/components/SchedulerProvider';
+import { Providers } from '@/components/Providers';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,12 +32,14 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-gray-50 min-h-screen`}>
-        <ToastProvider>
-          <ShopProvider>
-            <SchedulerProvider />
-            {children}
-          </ShopProvider>
-        </ToastProvider>
+        <Providers>
+          <ToastProvider>
+            <ShopProvider>
+              <SchedulerProvider />
+              {children}
+            </ShopProvider>
+          </ToastProvider>
+        </Providers>
         <script
           dangerouslySetInnerHTML={{
             __html: `

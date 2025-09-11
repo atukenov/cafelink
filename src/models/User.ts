@@ -5,6 +5,7 @@ export interface IUser extends Document {
   role: 'client' | 'employee' | 'admin' | 'administrator' | 'author';
   name: string;
   phone: string;
+  email?: string;
   pin?: string;
   coffeeShopId?: string;
   createdAt: Date;
@@ -24,6 +25,12 @@ const UserSchema = new Schema<IUser>({
     type: String,
     required: true,
     unique: true,
+  },
+  email: {
+    type: String,
+    required: false,
+    unique: true,
+    sparse: true,
   },
   pin: {
     type: String,

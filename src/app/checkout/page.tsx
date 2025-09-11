@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CreditCard, Banknote } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { apiClient } from '@/lib/api';
 import { CartItem } from '@/lib/types';
 import QRCode from '@/components/QRCode';
@@ -12,6 +13,7 @@ import { useShop } from '@/contexts/ShopContext';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const { selectedShop } = useShop();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerName, setCustomerName] = useState('');
@@ -35,15 +37,21 @@ export default function CheckoutPage() {
   };
 
   useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      localStorage.setItem('returnUrl', '/checkout');
+      router.push('/auth/signin?callbackUrl=/checkout');
+      return;
+    }
+
     loadCart();
     
-    const clientData = localStorage.getItem('client');
-    if (clientData) {
-      const client = JSON.parse(clientData);
-      setCustomerName(client.name || '');
-      setCustomerPhone(client.phone || '');
+    if (session.user) {
+      setCustomerName(session.user.name || '');
+      setCustomerPhone(session.user.phone || '');
     }
-  }, []);
+  }, [session, status, router]);
 
   const getTotalPrice = () => {
     return cart.reduce((total, item) => {
@@ -56,6 +64,12 @@ export default function CheckoutPage() {
   };
 
   const handlePayment = async () => {
+    if (!session?.user) {
+      localStorage.setItem('returnUrl', '/checkout');
+      router.push('/auth/signin?callbackUrl=/checkout');
+      return;
+    }
+
     if (!customerName.trim() || !customerPhone.trim()) {
       setError('Please fill in all required fields');
       return;
@@ -91,12 +105,10 @@ export default function CheckoutPage() {
 
       const order = await apiClient.createOrder(orderData);
       
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        const user = JSON.parse(userData);
+      if (session?.user?.id) {
         try {
           await apiClient.awardPoints({
-            userId: user._id,
+            userId: session.user.id,
             shopId: selectedShop?._id || 'default-shop-id',
             orderId: order._id,
             amountPaid: getTotalPrice()
@@ -126,6 +138,21 @@ export default function CheckoutPage() {
       await processOrder();
     }, 2000);
   };
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
 
   if (showQR) {
     return (
