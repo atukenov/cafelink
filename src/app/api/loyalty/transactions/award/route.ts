@@ -40,40 +40,64 @@ export async function POST(request: NextRequest) {
 
     const pointsEarned = Math.floor(amountPaid * program.earningRate * tierMultiplier);
 
-    const session = await mongoose.startSession();
+    const isReplicaSet = process.env.NODE_ENV === 'production' || process.env.MONGODB_REPLICA_SET === 'true';
     
-    try {
-      await session.withTransaction(async () => {
-        const transaction = new LoyaltyTransaction({
-          userId,
-          shopId,
-          type: 'earn',
-          points: pointsEarned,
-          orderId,
-          source: 'checkout',
-          meta: { amountPaid, earningRate: program.earningRate, tierMultiplier }
+    if (isReplicaSet) {
+      const session = await mongoose.startSession();
+      
+      try {
+        await session.withTransaction(async () => {
+          const transaction = new LoyaltyTransaction({
+            userId,
+            shopId,
+            type: 'earn',
+            points: pointsEarned,
+            orderId,
+            source: 'checkout',
+            meta: { amountPaid, earningRate: program.earningRate, tierMultiplier }
+          });
+          await transaction.save({ session });
+
+          await UserLoyalty.findOneAndUpdate(
+            { userId, shopId },
+            { 
+              $inc: { pointsBalance: pointsEarned },
+              $set: { lastUpdated: new Date() }
+            },
+            { upsert: true, new: true, session }
+          );
         });
-        await transaction.save({ session });
-
-        await UserLoyalty.findOneAndUpdate(
-          { userId, shopId },
-          { 
-            $inc: { pointsBalance: pointsEarned },
-            $set: { lastUpdated: new Date() }
-          },
-          { upsert: true, new: true, session }
-        );
-      });
-
-      return NextResponse.json({ 
-        pointsEarned,
-        orderId,
+      } finally {
+        await session.endSession();
+      }
+    } else {
+      const transaction = new LoyaltyTransaction({
         userId,
-        shopId
+        shopId,
+        type: 'earn',
+        points: pointsEarned,
+        orderId,
+        source: 'checkout',
+        meta: { amountPaid, earningRate: program.earningRate, tierMultiplier }
       });
-    } finally {
-      await session.endSession();
+      await transaction.save();
+
+      await UserLoyalty.findOneAndUpdate(
+        { userId, shopId },
+        { 
+          $inc: { pointsBalance: pointsEarned },
+          $set: { lastUpdated: new Date() }
+        },
+        { upsert: true, new: true }
+      );
     }
+
+    return NextResponse.json({ 
+      pointsEarned,
+      orderId,
+      userId,
+      shopId
+    });
   } catch (error) {
     console.error('Award points error:', error);
     return NextResponse.json({ error: 'Failed to award points' }, { status: 500 });
