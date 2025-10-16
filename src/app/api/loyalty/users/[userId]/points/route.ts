@@ -5,8 +5,8 @@ import LoyaltyProgram from '@/models/LoyaltyProgram';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
-) {
+  context: { params: Promise<{ userId: string }> }
+): Promise<Response> {
   try {
     await dbConnect();
     
@@ -17,11 +17,12 @@ export async function GET(
       return NextResponse.json({ error: 'Shop ID is required' }, { status: 400 });
     }
 
-    let userLoyalty = await UserLoyalty.findOne({ userId: params.userId, shopId });
+    const { userId } = await context.params;
+    let userLoyalty = await UserLoyalty.findOne({ userId, shopId });
     
     if (!userLoyalty) {
       userLoyalty = new UserLoyalty({
-        userId: params.userId,
+        userId,
         shopId,
         pointsBalance: 0,
         tierKey: 'bronze'
@@ -33,7 +34,7 @@ export async function GET(
     let currentTier = 'bronze';
     
     if (program) {
-      const sortedTiers = program.tiers.sort((a, b) => b.minPoints - a.minPoints);
+      const sortedTiers = program.tiers.sort((a: { minPoints: number }, b: { minPoints: number }) => b.minPoints - a.minPoints);
       for (const tier of sortedTiers) {
         if (userLoyalty.pointsBalance >= tier.minPoints) {
           currentTier = tier.key;

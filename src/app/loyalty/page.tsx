@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Star, Gift, History } from 'lucide-react';
+import { UserLoyalty } from '@/lib/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useShop } from '@/contexts/ShopContext';
 import { PointsBadge } from '@/components/loyalty/PointsBadge';
@@ -14,7 +15,7 @@ import { Card } from '@/components/ui/Card';
 export default function LoyaltyPage() {
   const { user, loading: authLoading } = useAuth({ requiredRoles: ['client'] });
   const { selectedShop } = useShop();
-  const [userLoyalty, setUserLoyalty] = useState<any>(null);
+  const [userLoyalty, setUserLoyalty] = useState<UserLoyalty | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

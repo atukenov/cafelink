@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     let tierMultiplier = 1.0;
     if (userLoyalty.tierKey) {
-      const tier = program.tiers.find(t => t.key === userLoyalty.tierKey);
+      const tier = program.tiers.find((t: { key: string; multiplier?: number }) => t.key === userLoyalty.tierKey);
       if (tier) {
         tierMultiplier = tier.multiplier || 1.0;
       }

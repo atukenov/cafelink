@@ -4,15 +4,16 @@ import LoyaltyProgram from '@/models/LoyaltyProgram';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { shopId: string } }
-) {
+  context: { params: Promise<{ shopId: string }> }
+): Promise<Response> {
   try {
     await dbConnect();
-    let program = await LoyaltyProgram.findOne({ shopId: params.shopId, active: true });
+    const { shopId } = await context.params;
+    let program = await LoyaltyProgram.findOne({ shopId, active: true });
     
     if (!program) {
       program = new LoyaltyProgram({
-        shopId: params.shopId,
+        shopId,
         earningRate: 0.01,
         tiers: [
           { key: 'bronze', name: 'Bronze', minPoints: 0, multiplier: 1.0 },

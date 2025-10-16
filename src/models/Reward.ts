@@ -8,7 +8,7 @@ export interface IReward extends Document {
   pointsCost: number;
   type: 'discount' | 'free_item' | 'coupon';
   value?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean>;
   active: boolean;
   createdAt: Date;
   updatedAt: Date;

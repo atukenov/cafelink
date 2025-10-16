@@ -9,7 +9,7 @@ export interface ILoyaltyTransaction extends Document {
   orderId?: string;
   rewardId?: string;
   source?: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, string | number | boolean>;
   createdAt: Date;
 }
 

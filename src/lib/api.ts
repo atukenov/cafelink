@@ -344,7 +344,7 @@ export class ApiClient {
     return this.request(`/loyalty/rewards?shopId=${shopId}`);
   }
 
-  async createReward(data: { shopId: string; title: string; description?: string; pointsCost: number; type: string; value?: number; metadata?: any }) {
+  async createReward(data: { shopId: string; title: string; description?: string; pointsCost: number; type: string; value?: number; metadata?: Record<string, string | number | boolean> }) {
     return this.request('/loyalty/rewards', {
       method: 'POST',
       body: JSON.stringify(data),

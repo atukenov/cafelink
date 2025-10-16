@@ -192,7 +192,7 @@ export interface LoyaltyTransaction {
   orderId?: string;
   rewardId?: string;
   source?: string;
-  meta?: Record<string, any>;
+  meta?: Record<string, string | number | boolean>;
   createdAt: string;
 }
 
@@ -204,7 +204,7 @@ export interface Reward {
   pointsCost: number;
   type: 'discount' | 'free_item' | 'coupon';
   value?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, string | number | boolean>;
   active: boolean;
   createdAt: string;
   updatedAt: string;
