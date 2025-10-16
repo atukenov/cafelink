@@ -1,10 +1,10 @@
 "use client";
 
+import { ActionButton, EmptyState, ListItem, PageHeader } from "@/components/common";
 import { apiClient } from "@/lib/api";
 import { AdditionalItem, Product } from "@/lib/types";
-import { ArrowLeft, Coffee, Edit, Package, Plus, Trash2 } from "lucide-react";
+import { Coffee, Edit, Package, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -220,28 +220,33 @@ export default function AdminMenuPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Coffee}
+        title="Loading..."
+        description="Please wait while we load your data"
+        className="min-h-screen"
+      />
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
-          <Link
-            href="/admin/dashboard"
-            className="p-2 hover:bg-gray-100 rounded-full"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-400" />
-          </Link>
-          <h1 className="text-xl font-bold text-gray-800">Menu Management</h1>
-        </div>
-      </div>
+      <PageHeader
+        title="Menu Management"
+        backHref="/admin/dashboard"
+        rightElement={
+          <ActionButton
+            icon={Plus}
+            label={activeTab === "products" ? "Add Product" : "Add Item"}
+            variant="primary"
+            onClick={() => 
+              activeTab === "products" 
+                ? setShowProductForm(true)
+                : setShowAdditionalForm(true)
+            }
+          />
+        }
+      />
 
       <div className="max-w-md mx-auto p-4">
         <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
@@ -352,19 +357,19 @@ export default function AdminMenuPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <button
+                    <ActionButton
+                      icon={Plus}
+                      label={submitting ? "Saving..." : editingProduct ? "Update" : "Create"}
+                      variant="primary"
+                      onClick={() => {}} // submit will be handled by the form
                       type="submit"
                       disabled={submitting}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-lg"
-                    >
-                      {submitting
-                        ? "Saving..."
-                        : editingProduct
-                        ? "Update"
-                        : "Create"}
-                    </button>
-                    <button
-                      type="button"
+                      className="flex-1"
+                    />
+                    <ActionButton
+                      icon={Trash2}
+                      label="Cancel"
+                      variant="secondary"
                       onClick={() => {
                         setShowProductForm(false);
                         setEditingProduct(null);
@@ -376,40 +381,39 @@ export default function AdminMenuPage() {
                         });
                         setError(null);
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
+                    />
                   </div>
                 </form>
               </div>
             )}
 
             {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading products...</p>
-              </div>
+              <EmptyState
+                icon={Coffee}
+                title="Loading products..."
+                description="Please wait while we fetch the menu items"
+              />
             ) : products.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Coffee className="w-12 h-12 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  No products yet
-                </h3>
-                <p className="text-gray-600">
-                  Add your first product to get started
-                </p>
-              </div>
+              <EmptyState
+                icon={Coffee}
+                title="No products yet"
+                description="Add your first product to get started"
+                action={{
+                  label: "Add First Product",
+                  onClick: () => setShowProductForm(true)
+                }}
+              />
             ) : (
               <div className="space-y-3">
                 {products.map((product) => (
-                  <div
+                  <ListItem
                     key={product._id}
-                    className="bg-white rounded-xl shadow-sm p-4"
-                  >
-                    <div className="flex items-center gap-3">
+                    title={product.name}
+                    subtitle={`${product.price} ₸`}
+                    description={product.additionalItems?.length ? 
+                      `${product.additionalItems.length} additional items` : 
+                      undefined}
+                    leftElement={
                       <Image
                         src={product.imageUrl}
                         alt={product.name}
@@ -417,36 +421,25 @@ export default function AdminMenuPage() {
                         height={48}
                         className="w-12 h-12 rounded-lg object-cover"
                       />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">
-                          {product.name}
-                        </h3>
-                        <p className="text-lg font-bold text-amber-600">
-                          {product.price} ₸
-                        </p>
-                        {product.additionalItems &&
-                          product.additionalItems.length > 0 && (
-                            <p className="text-xs text-gray-500">
-                              {product.additionalItems.length} additional items
-                            </p>
-                          )}
-                      </div>
+                    }
+                    rightElement={
                       <div className="flex gap-2">
-                        <button
+                        <ActionButton
+                          icon={Edit}
+                          label="Edit"
+                          variant="secondary"
                           onClick={() => startEditProduct(product)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
+                        />
+                        <ActionButton
+                          icon={Trash2}
+                          label="Delete"
+                          variant="danger"
                           onClick={() => handleDeleteProduct(product._id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        />
                       </div>
-                    </div>
-                  </div>
+                    }
+                    className="bg-white rounded-xl shadow-sm"
+                  />
                 ))}
               </div>
             )}
@@ -541,19 +534,19 @@ export default function AdminMenuPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <button
+                    <ActionButton
+                      icon={Plus}
+                      label={submitting ? "Saving..." : editingAdditional ? "Update" : "Create"}
+                      variant="primary"
+                      onClick={() => {}} // submit will be handled by the form
                       type="submit"
                       disabled={submitting}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-lg"
-                    >
-                      {submitting
-                        ? "Saving..."
-                        : editingAdditional
-                        ? "Update"
-                        : "Create"}
-                    </button>
-                    <button
-                      type="button"
+                      className="flex-1"
+                    />
+                    <ActionButton
+                      icon={Trash2}
+                      label="Cancel"
+                      variant="secondary"
                       onClick={() => {
                         setShowAdditionalForm(false);
                         setEditingAdditional(null);
@@ -564,74 +557,57 @@ export default function AdminMenuPage() {
                         });
                         setError(null);
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
+                    />
                   </div>
                 </form>
               </div>
             )}
 
             {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading additional items...</p>
-              </div>
+              <EmptyState
+                icon={Package}
+                title="Loading additional items..."
+                description="Please wait while we fetch the items"
+              />
             ) : additionalItems.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Package className="w-12 h-12 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  No additional items yet
-                </h3>
-                <p className="text-gray-600">
-                  Add customization options for your products
-                </p>
-              </div>
+              <EmptyState
+                icon={Package}
+                title="No additional items yet"
+                description="Add customization options for your products"
+                action={{
+                  label: "Add First Item",
+                  onClick: () => setShowAdditionalForm(true)
+                }}
+              />
             ) : (
               <div className="space-y-3">
                 {additionalItems.map((item) => (
-                  <div
+                  <ListItem
                     key={item._id}
-                    className="bg-white rounded-xl shadow-sm p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <Package className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">
-                          {item.name}
-                        </h3>
-                        <p className="text-lg font-bold text-amber-600">
-                          +{item.price} ₸
-                        </p>
-                        {item.productId && (
-                          <p className="text-xs text-gray-500">
-                            For:{" "}
-                            {products.find((p) => p._id === item.productId)
-                              ?.name || "Unknown product"}
-                          </p>
-                        )}
-                      </div>
+                    title={item.name}
+                    subtitle={`+${item.price} ₸`}
+                    description={item.productId ? 
+                      `For: ${products.find((p) => p._id === item.productId)?.name || "Unknown product"}` : 
+                      undefined}
+                    leftIcon={Package}
+                    rightElement={
                       <div className="flex gap-2">
-                        <button
+                        <ActionButton
+                          icon={Edit}
+                          label="Edit"
+                          variant="secondary"
                           onClick={() => startEditAdditional(item)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
+                        />
+                        <ActionButton
+                          icon={Trash2}
+                          label="Delete"
+                          variant="danger"
                           onClick={() => handleDeleteAdditional(item._id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        />
                       </div>
-                    </div>
-                  </div>
+                    }
+                    className="bg-white rounded-xl shadow-sm"
+                  />
                 ))}
               </div>
             )}
