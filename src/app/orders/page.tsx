@@ -139,11 +139,11 @@ export default function OrdersPage() {
     setClient(parsedClient);
     loadOrders(parsedClient);
 
-    const socket = socketManager.connect();
+    // const socket = socketManager.connect();
     socketManager.onOrderUpdated((data) => {
       setOrders((prev) =>
         prev.map((order) =>
-          order._id === data.orderId
+          order._id === data._id
             ? {
                 ...order,
                 status: data.status,

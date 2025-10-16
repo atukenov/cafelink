@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Plus, ShoppingCart, X } from 'lucide-react';
-import { apiClient } from '@/lib/api';
-import { Product, CartItem, AdditionalItem } from '@/lib/types';
+import { apiClient } from "@/lib/api";
+import { AdditionalItem, CartItem, Product } from "@/lib/types";
+import { ArrowLeft, Plus, ShoppingCart, X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -13,13 +13,25 @@ export default function MenuPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showAdditionalItems, setShowAdditionalItems] = useState(false);
-  const [selectedAdditionalItems, setSelectedAdditionalItems] = useState<{
-    additionalItemId: string;
-    quantity: number;
+  const [selectedAdditionalItems, setSelectedAdditionalItems] = useState<
+    {
+      additionalItemId: string;
+      quantity: number;
+      name: string;
+      price: number;
+    }[]
+  >([]);
+  interface CurrentEmployee {
+    _id: string;
+    userId: string;
     name: string;
-    price: number;
-  }[]>([]);
-  const [currentEmployees, setCurrentEmployees] = useState<any[]>([]);
+    role: string;
+    startTime: string;
+  }
+
+  const [currentEmployees, setCurrentEmployees] = useState<CurrentEmployee[]>(
+    []
+  );
 
   useEffect(() => {
     loadData();
@@ -30,13 +42,13 @@ export default function MenuPage() {
     try {
       const [productsData, employeesData] = await Promise.all([
         apiClient.getProducts(),
-        apiClient.getCurrentShifts()
+        apiClient.getCurrentShifts(),
       ]);
       setProducts(productsData);
       setCurrentEmployees(employeesData);
     } catch (err) {
-      setError('Failed to load menu');
-      console.error('Error loading data:', err);
+      setError("Failed to load menu");
+      console.error("Error loading data:", err);
     } finally {
       setLoading(false);
     }
@@ -47,15 +59,15 @@ export default function MenuPage() {
       const data = await apiClient.getProducts();
       setProducts(data);
     } catch (err) {
-      setError('Failed to load menu');
-      console.error('Error loading products:', err);
+      setError("Failed to load menu");
+      console.error("Error loading products:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const loadCart = () => {
-    const savedCart = localStorage.getItem('cart');
+    const savedCart = localStorage.getItem("cart");
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
@@ -68,28 +80,33 @@ export default function MenuPage() {
   };
 
   const addAdditionalItem = (additionalItem: AdditionalItem) => {
-    const existing = selectedAdditionalItems.find(item => item.additionalItemId === additionalItem._id);
+    const existing = selectedAdditionalItems.find(
+      (item) => item.additionalItemId === additionalItem._id
+    );
     if (existing) {
-      setSelectedAdditionalItems(prev => 
-        prev.map(item => 
-          item.additionalItemId === additionalItem._id 
+      setSelectedAdditionalItems((prev) =>
+        prev.map((item) =>
+          item.additionalItemId === additionalItem._id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
       );
     } else {
-      setSelectedAdditionalItems(prev => [...prev, {
-        additionalItemId: additionalItem._id,
-        quantity: 1,
-        name: additionalItem.name,
-        price: additionalItem.price
-      }]);
+      setSelectedAdditionalItems((prev) => [
+        ...prev,
+        {
+          additionalItemId: additionalItem._id,
+          quantity: 1,
+          name: additionalItem.name,
+          price: additionalItem.price,
+        },
+      ]);
     }
   };
 
   const removeAdditionalItem = (additionalItemId: string) => {
-    setSelectedAdditionalItems(prev => 
-      prev.filter(item => item.additionalItemId !== additionalItemId)
+    setSelectedAdditionalItems((prev) =>
+      prev.filter((item) => item.additionalItemId !== additionalItemId)
     );
   };
 
@@ -97,17 +114,20 @@ export default function MenuPage() {
     const productToAdd = product || selectedProduct;
     if (!productToAdd) return;
 
-    const existingItem = cart.find(item => item._id === productToAdd._id);
+    const existingItem = cart.find((item) => item._id === productToAdd._id);
     let newCart: CartItem[];
 
     const cartItem: CartItem = {
       ...productToAdd,
       quantity: 1,
-      selectedAdditionalItems: selectedAdditionalItems.length > 0 ? [...selectedAdditionalItems] : undefined
+      selectedAdditionalItems:
+        selectedAdditionalItems.length > 0
+          ? [...selectedAdditionalItems]
+          : undefined,
     };
 
     if (existingItem && selectedAdditionalItems.length === 0) {
-      newCart = cart.map(item =>
+      newCart = cart.map((item) =>
         item._id === productToAdd._id
           ? { ...item, quantity: item.quantity + 1 }
           : item
@@ -117,8 +137,8 @@ export default function MenuPage() {
     }
 
     setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
-    
+    localStorage.setItem("cart", JSON.stringify(newCart));
+
     if (showAdditionalItems) {
       setShowAdditionalItems(false);
       setSelectedProduct(null);
@@ -168,8 +188,11 @@ export default function MenuPage() {
             </Link>
             <h1 className="text-xl font-bold text-gray-800">Menu</h1>
           </div>
-          
-          <Link href="/cart" className="relative p-2 hover:bg-gray-100 rounded-full">
+
+          <Link
+            href="/cart"
+            className="relative p-2 hover:bg-gray-100 rounded-full"
+          >
             <ShoppingCart className="w-6 h-6" />
             {getCartItemCount() > 0 && (
               <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -190,23 +213,29 @@ export default function MenuPage() {
         ) : (
           <div className="space-y-4">
             {products.map((product) => (
-              <div key={product._id} className="bg-white rounded-xl shadow-sm p-4">
+              <div
+                key={product._id}
+                className="bg-white rounded-xl shadow-sm p-4"
+              >
                 <div className="flex gap-4">
                   <img
                     src={product.imageUrl}
                     alt={product.name}
                     className="w-20 h-20 rounded-lg object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder-coffee.jpg';
+                      (e.target as HTMLImageElement).src =
+                        "/placeholder-coffee.jpg";
                     }}
                   />
-                  
+
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800 mb-1">{product.name}</h3>
+                    <h3 className="font-semibold text-gray-800 mb-1">
+                      {product.name}
+                    </h3>
                     <p className="text-amber-600 font-bold text-lg mb-3">
                       {product.price} ₸
                     </p>
-                    
+
                     <div className="flex gap-2">
                       <button
                         onClick={() => addToCart(product)}
@@ -215,14 +244,15 @@ export default function MenuPage() {
                         <Plus className="w-4 h-4" />
                         Add
                       </button>
-                      {product.additionalItems && product.additionalItems.length > 0 && (
-                        <button
-                          onClick={() => openAdditionalItemsModal(product)}
-                          className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition-colors"
-                        >
-                          +
-                        </button>
-                      )}
+                      {product.additionalItems &&
+                        product.additionalItems.length > 0 && (
+                          <button
+                            onClick={() => openAdditionalItemsModal(product)}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition-colors"
+                          >
+                            +
+                          </button>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -238,7 +268,9 @@ export default function MenuPage() {
           <div className="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Customize {selectedProduct.name}</h3>
+                <h3 className="text-lg font-semibold">
+                  Customize {selectedProduct.name}
+                </h3>
                 <button
                   onClick={() => setShowAdditionalItems(false)}
                   className="p-2 hover:bg-gray-100 rounded-full"
@@ -247,17 +279,25 @@ export default function MenuPage() {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-4">
               <div className="mb-4">
-                <h4 className="font-medium text-gray-800 mb-2">Additional Items</h4>
-                {selectedProduct.additionalItems && selectedProduct.additionalItems.length > 0 ? (
+                <h4 className="font-medium text-gray-800 mb-2">
+                  Additional Items
+                </h4>
+                {selectedProduct.additionalItems &&
+                selectedProduct.additionalItems.length > 0 ? (
                   <div className="space-y-2">
                     {selectedProduct.additionalItems.map((item) => (
-                      <div key={item._id} className="flex items-center justify-between p-2 border rounded-lg">
+                      <div
+                        key={item._id}
+                        className="flex items-center justify-between p-2 border rounded-lg"
+                      >
                         <div>
                           <span className="font-medium">{item.name}</span>
-                          <span className="text-amber-600 ml-2">+{item.price}₸</span>
+                          <span className="text-amber-600 ml-2">
+                            +{item.price}₸
+                          </span>
                         </div>
                         <button
                           onClick={() => addAdditionalItem(item)}
@@ -275,17 +315,28 @@ export default function MenuPage() {
 
               {selectedAdditionalItems.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="font-medium text-gray-800 mb-2">Selected Items</h4>
+                  <h4 className="font-medium text-gray-800 mb-2">
+                    Selected Items
+                  </h4>
                   <div className="space-y-2">
                     {selectedAdditionalItems.map((item) => (
-                      <div key={item.additionalItemId} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div
+                        key={item.additionalItemId}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded-lg"
+                      >
                         <div>
                           <span>{item.name}</span>
-                          <span className="text-gray-600 ml-2">x{item.quantity}</span>
-                          <span className="text-amber-600 ml-2">+{item.price * item.quantity}₸</span>
+                          <span className="text-gray-600 ml-2">
+                            x{item.quantity}
+                          </span>
+                          <span className="text-amber-600 ml-2">
+                            +{item.price * item.quantity}₸
+                          </span>
                         </div>
                         <button
-                          onClick={() => removeAdditionalItem(item.additionalItemId)}
+                          onClick={() =>
+                            removeAdditionalItem(item.additionalItemId)
+                          }
                           className="text-red-600 hover:text-red-800 text-sm"
                         >
                           Remove

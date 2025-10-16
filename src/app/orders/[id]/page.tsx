@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Clock, CheckCircle, Coffee, MapPin } from 'lucide-react';
-import { useParams } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import { Order } from '@/lib/types';
-import { socketManager } from '@/lib/socket';
+import { apiClient } from "@/lib/api";
+import { socketManager } from "@/lib/socket";
+import { Order } from "@/lib/types";
+import { ArrowLeft, CheckCircle, Clock, Coffee, MapPin } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function OrderStatusPage() {
   const params = useParams();
@@ -16,20 +16,36 @@ export default function OrderStatusPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const loadOrder = async () => {
+      try {
+        const data = await apiClient.getOrder(orderId);
+        setOrder(data);
+      } catch (err) {
+        setError("Failed to load order details");
+        console.error("Error loading order:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (orderId) {
       loadOrder();
-      
-      const socket = socketManager.connect();
+
+      // const socket = socketManager.connect();
       socketManager.joinClient(orderId);
-      
+
       socketManager.onOrderUpdated((data) => {
-        if (data.orderId === orderId) {
-          setOrder(prev => prev ? {
-            ...prev,
-            status: data.status,
-            estimatedTime: data.estimatedTime,
-            updatedAt: new Date().toISOString()
-          } : null);
+        if (data._id === orderId) {
+          setOrder((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status: data.status,
+                  estimatedTime: data.estimatedTime,
+                  updatedAt: new Date().toISOString(),
+                }
+              : null
+          );
         }
       });
 
@@ -39,36 +55,42 @@ export default function OrderStatusPage() {
     }
   }, [orderId]);
 
-  const loadOrder = async () => {
-    try {
-      const data = await apiClient.getOrder(orderId);
-      setOrder(data);
-    } catch (err) {
-      setError('Failed to load order details');
-      console.error('Error loading order:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getStatusSteps = () => {
     const steps = [
-      { key: 'received', label: 'Order Received', icon: Clock },
-      { key: 'viewed', label: 'Order Viewed', icon: Clock },
-      { key: 'accepted', label: 'Preparing', icon: Coffee },
-      { key: 'ready', label: 'Ready for Pickup', icon: CheckCircle },
+      { key: "received", label: "Order Received", icon: Clock },
+      { key: "viewed", label: "Order Viewed", icon: Clock },
+      { key: "accepted", label: "Preparing", icon: Coffee },
+      { key: "ready", label: "Ready for Pickup", icon: CheckCircle },
     ];
 
-    if (order?.status === 'rejected') {
+    if (order?.status === "rejected") {
       return [
-        { key: 'received', label: 'Order Received', icon: Clock, completed: true, current: false },
-        { key: 'viewed', label: 'Order Viewed', icon: Clock, completed: true, current: false },
-        { key: 'rejected', label: 'Order Rejected', icon: Clock, completed: true, current: true },
+        {
+          key: "received",
+          label: "Order Received",
+          icon: Clock,
+          completed: true,
+          current: false,
+        },
+        {
+          key: "viewed",
+          label: "Order Viewed",
+          icon: Clock,
+          completed: true,
+          current: false,
+        },
+        {
+          key: "rejected",
+          label: "Order Rejected",
+          icon: Clock,
+          completed: true,
+          current: true,
+        },
       ];
     }
 
-    const currentIndex = steps.findIndex(step => step.key === order?.status);
-    
+    const currentIndex = steps.findIndex((step) => step.key === order?.status);
+
     return steps.map((step, index) => ({
       ...step,
       completed: index <= currentIndex,
@@ -77,21 +99,23 @@ export default function OrderStatusPage() {
   };
 
   const getEstimatedTime = () => {
-    if (!order) return '';
-    
+    if (!order) return "";
+
     switch (order.status) {
-      case 'received':
-        return 'Waiting for confirmation';
-      case 'viewed':
-        return 'Being reviewed';
-      case 'accepted':
-        return order.estimatedTime ? `${order.estimatedTime} minutes` : '15-20 minutes';
-      case 'ready':
-        return 'Ready now!';
-      case 'rejected':
-        return 'Order rejected';
+      case "received":
+        return "Waiting for confirmation";
+      case "viewed":
+        return "Being reviewed";
+      case "accepted":
+        return order.estimatedTime
+          ? `${order.estimatedTime} minutes`
+          : "15-20 minutes";
+      case "ready":
+        return "Ready now!";
+      case "rejected":
+        return "Order rejected";
       default:
-        return '';
+        return "";
     }
   };
 
@@ -110,7 +134,7 @@ export default function OrderStatusPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Order not found'}</p>
+          <p className="text-red-600 mb-4">{error || "Order not found"}</p>
           <Link
             href="/orders"
             className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700"
@@ -154,20 +178,26 @@ export default function OrderStatusPage() {
               const Icon = step.icon;
               return (
                 <div key={step.key} className="flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    step.completed 
-                      ? 'bg-green-100 text-green-600' 
-                      : step.current
-                      ? 'bg-amber-100 text-amber-600'
-                      : 'bg-gray-100 text-gray-400'
-                  }`}>
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      step.completed
+                        ? "bg-green-100 text-green-600"
+                        : step.current
+                        ? "bg-amber-100 text-amber-600"
+                        : "bg-gray-100 text-gray-400"
+                    }`}
+                  >
                     <Icon className="w-5 h-5" />
                   </div>
-                  
+
                   <div className="flex-1">
-                    <p className={`font-medium ${
-                      step.completed || step.current ? 'text-gray-800' : 'text-gray-400'
-                    }`}>
+                    <p
+                      className={`font-medium ${
+                        step.completed || step.current
+                          ? "text-gray-800"
+                          : "text-gray-400"
+                      }`}
+                    >
                       {step.label}
                     </p>
                     {step.current && (
@@ -176,7 +206,7 @@ export default function OrderStatusPage() {
                       </p>
                     )}
                   </div>
-                  
+
                   {step.completed && (
                     <CheckCircle className="w-5 h-5 text-green-500" />
                   )}
@@ -192,7 +222,8 @@ export default function OrderStatusPage() {
               <span className="font-medium text-gray-800">Pickup Location</span>
             </div>
             <p className="text-gray-600 ml-8">
-              CafeLink Coffee Shop<br />
+              CafeLink Coffee Shop
+              <br />
               Atyrau, Kazakhstan
             </p>
           </div>
@@ -205,15 +236,19 @@ export default function OrderStatusPage() {
             {order.items.map((item) => (
               <div key={item.productId} className="flex justify-between">
                 <span className="text-gray-600">Item x{item.quantity}</span>
-                <span className="font-medium">Product ID: {item.productId.slice(-6)}</span>
+                <span className="font-medium">
+                  Product ID: {item.productId.slice(-6)}
+                </span>
               </div>
             ))}
           </div>
-          
+
           <div className="border-t mt-3 pt-3">
             <div className="flex justify-between">
               <span className="font-semibold text-lg">Total</span>
-              <span className="font-bold text-lg text-amber-600">{order.totalPrice} ₸</span>
+              <span className="font-bold text-lg text-amber-600">
+                {order.totalPrice} ₸
+              </span>
             </div>
           </div>
         </div>
@@ -221,7 +256,9 @@ export default function OrderStatusPage() {
         {/* Customer Info */}
         {(order.customerName || order.customerPhone) && (
           <div className="bg-white rounded-xl shadow-sm p-4">
-            <h3 className="font-semibold text-gray-800 mb-3">Customer Information</h3>
+            <h3 className="font-semibold text-gray-800 mb-3">
+              Customer Information
+            </h3>
             {order.customerName && (
               <p className="text-gray-600 mb-1">Name: {order.customerName}</p>
             )}

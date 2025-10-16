@@ -1,44 +1,76 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { LogOut, Clock, CheckSquare, MessageSquare, User, Coffee, Calendar, Play, Square } from 'lucide-react';
-import { apiClient } from '@/lib/api';
-import { useToast } from '@/components/Toast';
-import { useAuth } from '@/hooks/useAuth';
-import { useSocket } from '@/hooks/useSocket';
-import { useUnreadCounts } from '@/hooks/useUnreadCounts';
-import { useShop } from '@/contexts/ShopContext';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { Card, ActionCard } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { formatTime, formatDuration } from '@/lib/utils';
+import { useToast } from "@/components/Toast";
+import { Button } from "@/components/ui/Button";
+import { ActionCard, Card } from "@/components/ui/Card";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useShop } from "@/contexts/ShopContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useSocket } from "@/hooks/useSocket";
+import { useUnreadCounts } from "@/hooks/useUnreadCounts";
+import { apiClient } from "@/lib/api";
+import { formatDuration, formatTime } from "@/lib/utils";
+import {
+  Calendar,
+  CheckSquare,
+  Clock,
+  Coffee,
+  LogOut,
+  MessageSquare,
+  Play,
+  Square,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function EmployeeDashboardPage() {
   const { showToast } = useToast();
-  const { user, loading: authLoading, logout } = useAuth({ 
-    requiredRoles: ['employee', 'admin', 'administrator', 'author'],
-    redirectTo: '/staff-login'
+  const {
+    user,
+    loading: authLoading,
+    logout,
+  } = useAuth({
+    requiredRoles: ["employee", "admin", "administrator", "author"],
+    redirectTo: "/staff-login",
   });
   const { selectedShop } = useShop();
-  const { unreadCounts, markMessagesAsRead, markOrdersAsRead } = useUnreadCounts();
-  const [myShifts, setMyShifts] = useState<any[]>([]);
-  const [currentShift, setCurrentShift] = useState<any>(null);
+  const { unreadCounts, markMessagesAsRead, markOrdersAsRead } =
+    useUnreadCounts();
+  interface ScheduledShift {
+    _id: string;
+    weekdays: number[];
+    startTime: string;
+    endTime: string;
+  }
+
+  interface CurrentShift {
+    _id: string;
+    employeeId: string;
+    startTime: string;
+    endTime?: string;
+  }
+
+  const [myShifts, setMyShifts] = useState<ScheduledShift[]>([]);
+  const [currentShift, setCurrentShift] = useState<CurrentShift | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useSocket({
     onNewOrder: (orderData) => {
       showToast({
-        type: 'info',
-        title: 'New Order!',
+        type: "info",
+        title: "New Order!",
         message: `Order #${orderData._id.slice(-6)} received`,
       });
     },
     onNewMessage: (messageData) => {
       showToast({
-        type: 'info',
-        title: 'New Message',
-        message: messageData.title,
+        type: "info",
+        title: "New Message",
+        message: `${messageData.userName}: ${messageData.message.substring(
+          0,
+          30
+        )}...`,
       });
     },
   });
@@ -60,16 +92,14 @@ export default function EmployeeDashboardPage() {
     try {
       const [shiftsData, currentShiftData] = await Promise.all([
         apiClient.getScheduledShifts(employeeId),
-        apiClient.getCurrentShift(employeeId)
+        apiClient.getCurrentShift(employeeId),
       ]);
       setMyShifts(shiftsData);
       setCurrentShift(currentShiftData);
     } catch (err) {
-      console.error('Error loading dashboard data:', err);
+      console.error("Error loading dashboard data:", err);
     }
   };
-
-
 
   const handleStartShift = async () => {
     if (!user) return;
@@ -77,16 +107,16 @@ export default function EmployeeDashboardPage() {
       const shiftData = await apiClient.startShift(user._id);
       setCurrentShift(shiftData);
       showToast({
-        type: 'success',
-        title: 'Shift Started',
-        message: 'Your work shift has begun',
+        type: "success",
+        title: "Shift Started",
+        message: "Your work shift has begun",
       });
     } catch (err) {
-      console.error('Error starting shift:', err);
+      console.error("Error starting shift:", err);
       showToast({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to start shift',
+        type: "error",
+        title: "Error",
+        message: "Failed to start shift",
       });
     }
   };
@@ -97,22 +127,22 @@ export default function EmployeeDashboardPage() {
       await apiClient.endShift(currentShift._id);
       setCurrentShift(null);
       showToast({
-        type: 'success',
-        title: 'Shift Ended',
-        message: 'Your work shift has ended',
+        type: "success",
+        title: "Shift Ended",
+        message: "Your work shift has ended",
       });
     } catch (err) {
-      console.error('Error ending shift:', err);
+      console.error("Error ending shift:", err);
       showToast({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to end shift',
+        type: "error",
+        title: "Error",
+        message: "Failed to end shift",
       });
     }
   };
 
   const getShiftDuration = () => {
-    if (!currentShift?.startTime) return '00:00:00';
+    if (!currentShift?.startTime) return "00:00:00";
     return formatDuration(currentShift.startTime, currentTime);
   };
 
@@ -134,7 +164,7 @@ export default function EmployeeDashboardPage() {
               <p className="text-sm text-gray-600">Employee Dashboard</p>
             </div>
           </div>
-          
+
           <button
             onClick={logout}
             className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
@@ -148,7 +178,9 @@ export default function EmployeeDashboardPage() {
       <div className="max-w-md mx-auto p-4">
         {/* Welcome Message */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6 text-center">
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Welcome Back!</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">
+            Welcome Back!
+          </h2>
           <p className="text-gray-600">Ready to start your shift?</p>
         </div>
 
@@ -160,7 +192,9 @@ export default function EmployeeDashboardPage() {
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-gray-800 mb-1">My Shifts</h3>
-              <p className="text-sm text-gray-600">Your scheduled shifts and current status</p>
+              <p className="text-sm text-gray-600">
+                Your scheduled shifts and current status
+              </p>
             </div>
           </div>
 
@@ -168,12 +202,17 @@ export default function EmployeeDashboardPage() {
           {currentShift ? (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-green-800 font-medium">Currently Working</span>
-                <span className="text-green-600 font-mono text-lg">{getShiftDuration()}</span>
+                <span className="text-green-800 font-medium">
+                  Currently Working
+                </span>
+                <span className="text-green-600 font-mono text-lg">
+                  {getShiftDuration()}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-green-600">
-                  Started: {new Date(currentShift.startTime).toLocaleTimeString()}
+                  Started:{" "}
+                  {new Date(currentShift.startTime).toLocaleTimeString()}
                 </span>
                 <Button
                   onClick={handleEndShift}
@@ -204,15 +243,28 @@ export default function EmployeeDashboardPage() {
           {/* Scheduled Shifts */}
           {myShifts.length > 0 && (
             <div>
-              <h4 className="font-medium text-gray-700 mb-2">This Week's Schedule</h4>
+              <h4 className="font-medium text-gray-700 mb-2">
+                This Week&apos;s Schedule
+              </h4>
               <div className="space-y-2">
                 {myShifts.slice(0, 3).map((shift) => (
-                  <div key={shift._id} className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={shift._id}
+                    className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg"
+                  >
                     <span className="text-sm text-gray-700">
-                      {shift.weekdays.map((day: number) => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][day]).join(', ')}
+                      {shift.weekdays
+                        .map(
+                          (day: number) =>
+                            ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+                              day
+                            ]
+                        )
+                        .join(", ")}
                     </span>
                     <span className="text-sm font-medium text-gray-800">
-                      {formatTime(shift.startTime)} - {formatTime(shift.endTime)}
+                      {formatTime(shift.startTime)} -{" "}
+                      {formatTime(shift.endTime)}
                     </span>
                   </div>
                 ))}
@@ -274,7 +326,9 @@ export default function EmployeeDashboardPage() {
 
         {/* Quick Stats */}
         <Card className="mt-8 p-6">
-          <h3 className="font-semibold text-gray-800 mb-4">Today&apos;s Overview</h3>
+          <h3 className="font-semibold text-gray-800 mb-4">
+            Today&apos;s Overview
+          </h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">0</div>

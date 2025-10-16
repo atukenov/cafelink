@@ -1,67 +1,70 @@
-'use client';
+"use client";
 
+import QRCode from "@/components/QRCode";
+import { socketManager } from "@/lib/socket";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CreditCard, Banknote } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { CartItem } from '@/lib/types';
-import QRCode from '@/components/QRCode';
-import { socketManager } from '@/lib/socket';
 import { useShop } from '@/contexts/ShopContext';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { selectedShop } = useShop();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'kaspi' | 'cash'>('kaspi');
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"kaspi" | "cash">("kaspi");
   const [showQR, setShowQR] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadCart = () => {
-    const savedCart = localStorage.getItem('cart');
+    const savedCart = localStorage.getItem("cart");
     if (savedCart) {
       const cartData = JSON.parse(savedCart);
       setCart(cartData);
       if (cartData.length === 0) {
-        router.push('/menu');
+        router.push("/menu");
       }
     } else {
-      router.push('/menu');
+      router.push("/menu");
     }
   };
 
   useEffect(() => {
     loadCart();
-    
-    const clientData = localStorage.getItem('client');
+
+    const clientData = localStorage.getItem("client");
     if (clientData) {
       const client = JSON.parse(clientData);
-      setCustomerName(client.name || '');
-      setCustomerPhone(client.phone || '');
+      setCustomerName(client.name || "");
+      setCustomerPhone(client.phone || "");
     }
   }, []);
 
   const getTotalPrice = () => {
     return cart.reduce((total, item) => {
       const itemTotal = item.price * item.quantity;
-      const additionalItemsTotal = item.selectedAdditionalItems?.reduce(
-        (addTotal, addItem) => addTotal + (addItem.price * addItem.quantity * item.quantity), 0
-      ) || 0;
+      const additionalItemsTotal =
+        item.selectedAdditionalItems?.reduce(
+          (addTotal, addItem) =>
+            addTotal + addItem.price * addItem.quantity * item.quantity,
+          0
+        ) || 0;
       return total + itemTotal + additionalItemsTotal;
     }, 0);
   };
 
   const handlePayment = async () => {
     if (!customerName.trim() || !customerPhone.trim()) {
-      setError('Please fill in all required fields');
+      setError("Please fill in all required fields");
       return;
     }
 
-    if (paymentMethod === 'kaspi') {
+    if (paymentMethod === "kaspi") {
       setShowQR(true);
       return;
     }
@@ -74,14 +77,21 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
+      const coffeeShopId = localStorage.getItem("selectedShopId");
+      if (!coffeeShopId) {
+        setError("No coffee shop selected");
+        return;
+      }
+
       const orderData = {
-        items: cart.map(item => ({
+        items: cart.map((item) => ({
           productId: item._id,
           quantity: item.quantity,
-          additionalItems: item.selectedAdditionalItems?.map(addItem => ({
-            additionalItemId: addItem.additionalItemId,
-            quantity: addItem.quantity
-          })) || []
+          additionalItems:
+            item.selectedAdditionalItems?.map((addItem) => ({
+              additionalItemId: addItem.additionalItemId,
+              quantity: addItem.quantity,
+            })) || [],
         })),
         totalPrice: getTotalPrice(),
         customerName: customerName.trim(),
@@ -108,13 +118,13 @@ export default function CheckoutPage() {
       
       const socket = socketManager.connect();
       socketManager.emitNewOrder(order);
-      
-      localStorage.removeItem('cart');
-      
+
+      localStorage.removeItem("cart");
+
       router.push(`/orders/${order._id}`);
     } catch (err) {
-      setError('Failed to create order. Please try again.');
-      console.error('Error creating order:', err);
+      setError("Failed to create order. Please try again.");
+      console.error("Error creating order:", err);
     } finally {
       setLoading(false);
     }
@@ -148,22 +158,22 @@ export default function CheckoutPage() {
             <p className="text-gray-600 mb-6">
               Open Kaspi app and scan this QR code to pay {getTotalPrice()} ₸
             </p>
-            
-            <QRCode 
+
+            <QRCode
               value={`kaspi://pay?amount=${getTotalPrice()}&merchant=CafeLink&order=${Date.now()}`}
               size={200}
               className="mb-6"
             />
-            
+
             <div className="space-y-3">
               <button
                 onClick={handleQRPayment}
                 disabled={loading}
                 className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
               >
-                {loading ? 'Processing...' : 'I Have Paid'}
+                {loading ? "Processing..." : "I Have Paid"}
               </button>
-              
+
               <button
                 onClick={() => setShowQR(false)}
                 className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-xl transition-colors"
@@ -192,8 +202,10 @@ export default function CheckoutPage() {
       <div className="max-w-md mx-auto p-4">
         {/* Customer Information */}
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-          <h3 className="font-semibold text-gray-800 mb-4">Customer Information</h3>
-          
+          <h3 className="font-semibold text-gray-800 mb-4">
+            Customer Information
+          </h3>
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -207,7 +219,7 @@ export default function CheckoutPage() {
                 placeholder="Enter your name"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Phone Number *
@@ -226,28 +238,28 @@ export default function CheckoutPage() {
         {/* Payment Method */}
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
           <h3 className="font-semibold text-gray-800 mb-4">Payment Method</h3>
-          
+
           <div className="space-y-3">
             <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
               <input
                 type="radio"
                 name="payment"
                 value="kaspi"
-                checked={paymentMethod === 'kaspi'}
-                onChange={(e) => setPaymentMethod(e.target.value as 'kaspi')}
+                checked={paymentMethod === "kaspi"}
+                onChange={(e) => setPaymentMethod(e.target.value as "kaspi")}
                 className="mr-3"
               />
               <CreditCard className="w-5 h-5 mr-3 text-blue-600" />
               <span className="font-medium">Kaspi QR</span>
             </label>
-            
+
             <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
               <input
                 type="radio"
                 name="payment"
                 value="cash"
-                checked={paymentMethod === 'cash'}
-                onChange={(e) => setPaymentMethod(e.target.value as 'cash')}
+                checked={paymentMethod === "cash"}
+                onChange={(e) => setPaymentMethod(e.target.value as "cash")}
                 className="mr-3"
               />
               <Banknote className="w-5 h-5 mr-3 text-green-600" />
@@ -263,19 +275,30 @@ export default function CheckoutPage() {
             {cart.map((item) => (
               <div key={item._id} className="space-y-1">
                 <div className="flex justify-between text-sm">
-                  <span>{item.name} x{item.quantity}</span>
+                  <span>
+                    {item.name} x{item.quantity}
+                  </span>
                   <span>{item.price * item.quantity} ₸</span>
                 </div>
-                {item.selectedAdditionalItems && item.selectedAdditionalItems.length > 0 && (
-                  <div className="ml-4 space-y-1">
-                    {item.selectedAdditionalItems.map((addItem) => (
-                      <div key={addItem.additionalItemId} className="flex justify-between text-xs text-gray-600">
-                        <span>+ {addItem.name} x{addItem.quantity}</span>
-                        <span>+{addItem.price * addItem.quantity * item.quantity} ₸</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {item.selectedAdditionalItems &&
+                  item.selectedAdditionalItems.length > 0 && (
+                    <div className="ml-4 space-y-1">
+                      {item.selectedAdditionalItems.map((addItem) => (
+                        <div
+                          key={addItem.additionalItemId}
+                          className="flex justify-between text-xs text-gray-600"
+                        >
+                          <span>
+                            + {addItem.name} x{addItem.quantity}
+                          </span>
+                          <span>
+                            +{addItem.price * addItem.quantity * item.quantity}{" "}
+                            ₸
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
             ))}
             <div className="border-t pt-2">
@@ -300,7 +323,7 @@ export default function CheckoutPage() {
           disabled={loading}
           className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
         >
-          {loading ? 'Processing...' : `Place Order - ${getTotalPrice()} ₸`}
+          {loading ? "Processing..." : `Place Order - ${getTotalPrice()} ₸`}
         </button>
       </div>
     </div>

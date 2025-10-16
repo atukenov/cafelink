@@ -1,16 +1,36 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { socketManager } from '@/lib/socket';
-import { useShop } from '@/contexts/ShopContext';
+import { useShop } from "@/contexts/ShopContext";
+import { ISocketTaskUpdate, socketManager } from "@/lib/socket";
+import { IOrder } from "@/models/Order";
+import { useEffect, useRef } from "react";
+
+interface IUserTyping {
+  userId: string;
+  userName: string;
+}
+
+interface IMessagesRead {
+  userId: string;
+  readAt: Date;
+}
+
+interface IChatMessage {
+  message: string;
+  userId: string;
+  userName: string;
+  userRole: "client" | "employee" | "administrator" | "admin" | "author";
+  createdAt: Date;
+  readBy: { userId: string; readAt: Date }[];
+}
 
 interface UseSocketOptions {
-  onOrderUpdate?: (data: any) => void;
-  onNewOrder?: (data: any) => void;
-  onTaskUpdate?: (data: any) => void;
-  onNewMessage?: (data: any) => void;
-  onUserTyping?: (data: any) => void;
-  onMessagesRead?: (data: any) => void;
+  onOrderUpdate?: (data: IOrder) => void;
+  onNewOrder?: (data: IOrder) => void;
+  onTaskUpdate?: (data: ISocketTaskUpdate) => void;
+  onNewMessage?: (data: IChatMessage) => void;
+  onUserTyping?: (data: IUserTyping) => void;
+  onMessagesRead?: (data: IMessagesRead) => void;
 }
 
 export const useSocket = (options: UseSocketOptions = {}) => {
@@ -22,35 +42,35 @@ export const useSocket = (options: UseSocketOptions = {}) => {
     if (!selectedShop) return;
 
     const socket = socketManager.connect();
-    
-    socket.emit('join-shop', selectedShop._id);
+
+    socket.emit("join-shop", selectedShop._id);
 
     if (optionsRef.current.onOrderUpdate) {
       socketManager.onOrderUpdated(optionsRef.current.onOrderUpdate);
     }
-    
+
     if (optionsRef.current.onNewOrder) {
       socketManager.onNewOrder(optionsRef.current.onNewOrder);
     }
-    
+
     if (optionsRef.current.onTaskUpdate) {
       socketManager.onTaskUpdate(optionsRef.current.onTaskUpdate);
     }
-    
+
     if (optionsRef.current.onNewMessage) {
       socketManager.onNewMessage(optionsRef.current.onNewMessage);
     }
-    
+
     if (optionsRef.current.onUserTyping) {
       socketManager.onUserTyping(optionsRef.current.onUserTyping);
     }
-    
+
     if (optionsRef.current.onMessagesRead) {
       socketManager.onMessagesRead(optionsRef.current.onMessagesRead);
     }
 
     return () => {
-      socket.emit('leave-shop', selectedShop._id);
+      socket.emit("leave-shop", selectedShop._id);
       socketManager.offOrderUpdated();
       socketManager.offNewOrder();
       socketManager.offTaskUpdate();

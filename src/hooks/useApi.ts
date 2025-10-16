@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from "react";
 
 interface UseApiState<T> {
   data: T | null;
@@ -12,19 +12,20 @@ export function useApi<T>() {
   const [state, setState] = useState<UseApiState<T>>({
     data: null,
     loading: false,
-    error: null
+    error: null,
   });
 
   const execute = useCallback(async (apiCall: () => Promise<T>) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
     try {
       const data = await apiCall();
       setState({ data, loading: false, error: null });
       return data;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      setState(prev => ({ ...prev, loading: false, error: errorMessage }));
+      const errorMessage =
+        error instanceof Error ? error.message : "An error occurred";
+      setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
       throw error;
     }
   }, []);
@@ -36,30 +37,34 @@ export function useApi<T>() {
   return {
     ...state,
     execute,
-    reset
+    reset,
   };
 }
 
-export function useApiMutation<T, P = any>() {
+export function useApiMutation<T, P = unknown>() {
   const [state, setState] = useState<UseApiState<T>>({
     data: null,
     loading: false,
-    error: null
+    error: null,
   });
 
-  const mutate = useCallback(async (apiCall: (params: P) => Promise<T>, params: P) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
-    try {
-      const data = await apiCall(params);
-      setState({ data, loading: false, error: null });
-      return data;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-      setState(prev => ({ ...prev, loading: false, error: errorMessage }));
-      throw error;
-    }
-  }, []);
+  const mutate = useCallback(
+    async (apiCall: (params: P) => Promise<T>, params: P) => {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+
+      try {
+        const data = await apiCall(params);
+        setState({ data, loading: false, error: null });
+        return data;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An error occurred";
+        setState((prev) => ({ ...prev, loading: false, error: errorMessage }));
+        throw error;
+      }
+    },
+    []
+  );
 
   const reset = useCallback(() => {
     setState({ data: null, loading: false, error: null });
@@ -68,6 +73,6 @@ export function useApiMutation<T, P = any>() {
   return {
     ...state,
     mutate,
-    reset
+    reset,
   };
 }
