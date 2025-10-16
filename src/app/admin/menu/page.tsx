@@ -1,6 +1,11 @@
 "use client";
 
-import { ActionButton, EmptyState, ListItem, PageHeader } from "@/components/common";
+import {
+  ActionButton,
+  EmptyState,
+  ListItem,
+  PageHeader,
+} from "@/components/common";
 import { apiClient } from "@/lib/api";
 import { AdditionalItem, Product } from "@/lib/types";
 import { Coffee, Edit, Package, Plus, Trash2 } from "lucide-react";
@@ -239,8 +244,8 @@ export default function AdminMenuPage() {
             icon={Plus}
             label={activeTab === "products" ? "Add Product" : "Add Item"}
             variant="primary"
-            onClick={() => 
-              activeTab === "products" 
+            onClick={() =>
+              activeTab === "products"
                 ? setShowProductForm(true)
                 : setShowAdditionalForm(true)
             }
@@ -359,7 +364,13 @@ export default function AdminMenuPage() {
                   <div className="flex gap-2">
                     <ActionButton
                       icon={Plus}
-                      label={submitting ? "Saving..." : editingProduct ? "Update" : "Create"}
+                      label={
+                        submitting
+                          ? "Saving..."
+                          : editingProduct
+                          ? "Update"
+                          : "Create"
+                      }
                       variant="primary"
                       onClick={() => {}} // submit will be handled by the form
                       type="submit"
@@ -400,7 +411,7 @@ export default function AdminMenuPage() {
                 description="Add your first product to get started"
                 action={{
                   label: "Add First Product",
-                  onClick: () => setShowProductForm(true)
+                  onClick: () => setShowProductForm(true),
                 }}
               />
             ) : (
@@ -410,9 +421,11 @@ export default function AdminMenuPage() {
                     key={product._id}
                     title={product.name}
                     subtitle={`${product.price} ₸`}
-                    description={product.additionalItems?.length ? 
-                      `${product.additionalItems.length} additional items` : 
-                      undefined}
+                    description={
+                      product.additionalItems?.length
+                        ? `${product.additionalItems.length} additional items`
+                        : undefined
+                    }
                     leftElement={
                       <Image
                         src={product.imageUrl}
@@ -536,7 +549,13 @@ export default function AdminMenuPage() {
                   <div className="flex gap-2">
                     <ActionButton
                       icon={Plus}
-                      label={submitting ? "Saving..." : editingAdditional ? "Update" : "Create"}
+                      label={
+                        submitting
+                          ? "Saving..."
+                          : editingAdditional
+                          ? "Update"
+                          : "Create"
+                      }
                       variant="primary"
                       onClick={() => {}} // submit will be handled by the form
                       type="submit"
@@ -576,7 +595,7 @@ export default function AdminMenuPage() {
                 description="Add customization options for your products"
                 action={{
                   label: "Add First Item",
-                  onClick: () => setShowAdditionalForm(true)
+                  onClick: () => setShowAdditionalForm(true),
                 }}
               />
             ) : (
@@ -586,9 +605,14 @@ export default function AdminMenuPage() {
                     key={item._id}
                     title={item.name}
                     subtitle={`+${item.price} ₸`}
-                    description={item.productId ? 
-                      `For: ${products.find((p) => p._id === item.productId)?.name || "Unknown product"}` : 
-                      undefined}
+                    description={
+                      item.productId
+                        ? `For: ${
+                            products.find((p) => p._id === item.productId)
+                              ?.name || "Unknown product"
+                          }`
+                        : undefined
+                    }
                     leftIcon={Package}
                     rightElement={
                       <div className="flex gap-2">
