@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import UserLoyalty from '@/models/UserLoyalty';
-import LoyaltyProgram from '@/models/LoyaltyProgram';
+import dbConnect from "@/lib/mongodb";
+import LoyaltyProgram from "@/models/LoyaltyProgram";
+import UserLoyalty from "@/models/UserLoyalty";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
@@ -9,39 +9,45 @@ export async function GET(
 ): Promise<Response> {
   try {
     await dbConnect();
-    
+
     const { searchParams } = new URL(request.url);
-    const shopId = searchParams.get('shopId');
-    
+    const shopId = searchParams.get("shopId");
+
     if (!shopId) {
-      return NextResponse.json({ error: 'Shop ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Shop ID is required" },
+        { status: 400 }
+      );
     }
 
     const { userId } = await context.params;
     let userLoyalty = await UserLoyalty.findOne({ userId, shopId });
-    
+
     if (!userLoyalty) {
       userLoyalty = new UserLoyalty({
         userId,
         shopId,
         pointsBalance: 0,
-        tierKey: 'bronze'
+        tierKey: "bronze",
       });
       await userLoyalty.save();
     }
 
     const program = await LoyaltyProgram.findOne({ shopId, active: true });
-    let currentTier = 'bronze';
-    
+    let currentTier = "bronze";
+
     if (program) {
-      const sortedTiers = program.tiers.sort((a: { minPoints: number }, b: { minPoints: number }) => b.minPoints - a.minPoints);
+      const sortedTiers = program.tiers.sort(
+        (a: { minPoints: number }, b: { minPoints: number }) =>
+          b.minPoints - a.minPoints
+      );
       for (const tier of sortedTiers) {
         if (userLoyalty.pointsBalance >= tier.minPoints) {
           currentTier = tier.key;
           break;
         }
       }
-      
+
       if (userLoyalty.tierKey !== currentTier) {
         userLoyalty.tierKey = currentTier;
         await userLoyalty.save();
@@ -51,10 +57,13 @@ export async function GET(
     return NextResponse.json({
       pointsBalance: userLoyalty.pointsBalance,
       tierKey: userLoyalty.tierKey,
-      lastUpdated: userLoyalty.lastUpdated
+      lastUpdated: userLoyalty.lastUpdated,
     });
   } catch (error) {
-    console.error('Get user loyalty error:', error);
-    return NextResponse.json({ error: 'Failed to fetch user loyalty' }, { status: 500 });
+    console.error("Get user loyalty error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch user loyalty" },
+      { status: 500 }
+    );
   }
 }

@@ -1,6 +1,6 @@
 export interface User {
   _id: string;
-  role: 'client' | 'employee' | 'admin' | 'administrator' | 'author';
+  role: "client" | "employee" | "admin" | "administrator" | "author";
   name: string;
   phone: string;
   coffeeShopId?: string;
@@ -55,7 +55,7 @@ export interface Order {
   userId?: string;
   coffeeShopId: string;
   items: OrderItem[];
-  status: 'received' | 'viewed' | 'accepted' | 'rejected' | 'ready';
+  status: "received" | "viewed" | "accepted" | "rejected" | "ready";
   totalPrice: number;
   customerName?: string;
   customerPhone?: string;
@@ -78,7 +78,7 @@ export interface Shift {
 export interface Task {
   _id: string;
   description: string;
-  status: 'pending' | 'done';
+  status: "pending" | "done";
   employeeId?: string;
   createdBy?: string;
   coffeeShopId: string;
@@ -117,7 +117,7 @@ export interface ScheduledShift {
 
 export interface Promotion {
   _id: string;
-  type: 'sale' | 'news';
+  type: "sale" | "news";
   title: string;
   description: string;
   imageUrl?: string;
@@ -187,7 +187,7 @@ export interface LoyaltyTransaction {
   _id: string;
   userId: string;
   shopId: string;
-  type: 'earn' | 'redeem' | 'expire' | 'adjust';
+  type: "earn" | "redeem" | "expire" | "adjust";
   points: number;
   orderId?: string;
   rewardId?: string;
@@ -202,7 +202,7 @@ export interface Reward {
   title: string;
   description?: string;
   pointsCost: number;
-  type: 'discount' | 'free_item' | 'coupon';
+  type: "discount" | "free_item" | "coupon";
   value?: number;
   metadata?: Record<string, string | number | boolean>;
   active: boolean;
@@ -216,7 +216,7 @@ export interface Redemption {
   shopId: string;
   rewardId: string;
   pointsSpent: number;
-  status: 'reserved' | 'fulfilled' | 'cancelled';
+  status: "reserved" | "fulfilled" | "cancelled";
   code?: string;
   createdAt: string;
   fulfilledAt?: string;
