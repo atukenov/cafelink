@@ -316,6 +316,51 @@ export class ApiClient {
       method: 'DELETE',
     });
   }
+
+  async markOrdersAsRead(userId: string, shopId?: string) {
+    const params = new URLSearchParams({ userId });
+    if (shopId) params.append('shopId', shopId);
+    return this.request(`/mark-orders-read?${params.toString()}`, {
+      method: 'POST',
+    });
+  }
+
+  async getLoyaltyProgram(shopId: string) {
+    return this.request(`/loyalty/programs/${shopId}`);
+  }
+
+  async getUserLoyalty(userId: string, shopId: string) {
+    return this.request(`/loyalty/users/${userId}/points?shopId=${shopId}`);
+  }
+
+  async awardPoints(data: { userId: string; shopId: string; orderId: string; amountPaid: number }) {
+    return this.request('/loyalty/transactions/award', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getRewards(shopId: string) {
+    return this.request(`/loyalty/rewards?shopId=${shopId}`);
+  }
+
+  async createReward(data: { shopId: string; title: string; description?: string; pointsCost: number; type: string; value?: number; metadata?: any }) {
+    return this.request('/loyalty/rewards', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async redeemReward(data: { userId: string; shopId: string; rewardId: string }) {
+    return this.request('/loyalty/redeem', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getLoyaltyTransactions(userId: string, shopId: string, page = 1, limit = 20) {
+    return this.request(`/loyalty/transactions?userId=${userId}&shopId=${shopId}&page=${page}&limit=${limit}`);
+  }
 }
 
 export const apiClient = new ApiClient();

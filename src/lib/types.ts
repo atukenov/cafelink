@@ -155,3 +155,70 @@ export interface ChatMessage {
   }[];
   createdAt: string;
 }
+
+export interface LoyaltyProgram {
+  _id: string;
+  shopId: string;
+  name?: string;
+  earningRate: number;
+  pointExpiryDays?: number;
+  tiers: Array<{
+    key: string;
+    name: string;
+    minPoints: number;
+    multiplier?: number;
+  }>;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserLoyalty {
+  _id: string;
+  userId: string;
+  shopId: string;
+  pointsBalance: number;
+  pointsPending?: number;
+  tierKey?: string;
+  lastUpdated: string;
+}
+
+export interface LoyaltyTransaction {
+  _id: string;
+  userId: string;
+  shopId: string;
+  type: 'earn' | 'redeem' | 'expire' | 'adjust';
+  points: number;
+  orderId?: string;
+  rewardId?: string;
+  source?: string;
+  meta?: Record<string, any>;
+  createdAt: string;
+}
+
+export interface Reward {
+  _id: string;
+  shopId: string;
+  title: string;
+  description?: string;
+  pointsCost: number;
+  type: 'discount' | 'free_item' | 'coupon';
+  value?: number;
+  metadata?: Record<string, any>;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Redemption {
+  _id: string;
+  userId: string;
+  shopId: string;
+  rewardId: string;
+  pointsSpent: number;
+  status: 'reserved' | 'fulfilled' | 'cancelled';
+  code?: string;
+  createdAt: string;
+  fulfilledAt?: string;
+  cancelledAt?: string;
+}

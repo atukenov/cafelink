@@ -2,12 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Crown, Users, Settings, Shield } from 'lucide-react';
+import { ArrowLeft, Crown, Users, Settings, Shield, Database, CheckCircle, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/Toast';
 
 export default function AuthorDashboardPage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
+  const [seedingStatus, setSeedingStatus] = useState<Record<string, 'idle' | 'loading' | 'success' | 'error'>>({});
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -28,6 +31,56 @@ export default function AuthorDashboardPage() {
   const handleLogout = () => {
     localStorage.removeItem('user');
     router.push('/');
+  };
+
+  const handleSeedDatabase = async (script: string) => {
+    setSeedingStatus(prev => ({ ...prev, [script]: 'loading' }));
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/seed', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ script })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSeedingStatus(prev => ({ ...prev, [script]: 'success' }));
+        showToast({
+          type: 'success',
+          title: 'Seeding Successful',
+          message: `${script} executed successfully`
+        });
+      } else {
+        throw new Error(result.error || 'Seeding failed');
+      }
+    } catch (error) {
+      setSeedingStatus(prev => ({ ...prev, [script]: 'error' }));
+      showToast({
+        type: 'error',
+        title: 'Seeding Failed',
+        message: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+    }
+  };
+
+  const getSeedingIcon = (script: string) => {
+    const status = seedingStatus[script] || 'idle';
+    switch (status) {
+      case 'loading':
+        return <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600" />;
+      case 'success':
+        return <CheckCircle className="w-5 h-5 text-green-600" />;
+      case 'error':
+        return <XCircle className="w-5 h-5 text-red-600" />;
+      default:
+        return <Database className="w-5 h-5 text-purple-600" />;
+    }
   };
 
   if (!user) {
@@ -73,6 +126,56 @@ export default function AuthorDashboardPage() {
         </div>
 
         <div className="space-y-4">
+          {/* Database Seeding Section */}
+          <div className="bg-white rounded-xl shadow-sm p-4">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Database className="w-5 h-5 text-purple-600" />
+              Database Seeding
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                onClick={() => handleSeedDatabase('create-author')}
+                disabled={seedingStatus['create-author'] === 'loading'}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                <span>Create Author User</span>
+                {getSeedingIcon('create-author')}
+              </button>
+              <button
+                onClick={() => handleSeedDatabase('create-admin')}
+                disabled={seedingStatus['create-admin'] === 'loading'}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                <span>Create Admin User</span>
+                {getSeedingIcon('create-admin')}
+              </button>
+              <button
+                onClick={() => handleSeedDatabase('create-default-shop')}
+                disabled={seedingStatus['create-default-shop'] === 'loading'}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                <span>Create Default Shop</span>
+                {getSeedingIcon('create-default-shop')}
+              </button>
+              <button
+                onClick={() => handleSeedDatabase('seed-menu')}
+                disabled={seedingStatus['seed-menu'] === 'loading'}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                <span>Seed Menu Items</span>
+                {getSeedingIcon('seed-menu')}
+              </button>
+              <button
+                onClick={() => handleSeedDatabase('seed-additional-items')}
+                disabled={seedingStatus['seed-additional-items'] === 'loading'}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              >
+                <span>Seed Additional Items</span>
+                {getSeedingIcon('seed-additional-items')}
+              </button>
+            </div>
+          </div>
+
           <Link
             href="/author/users"
             className="block bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow"
