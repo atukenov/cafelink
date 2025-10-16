@@ -1,6 +1,8 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cafelink';
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  "mongodb+srv://dbadmin:Aa123456@dmd-dev.ftfhd1o.mongodb.net/?retryWrites=true&w=majority&appName=dmd-dev";
 
 const CoffeeShopSchema = new mongoose.Schema({
   name: {
@@ -26,15 +28,15 @@ const CoffeeShopSchema = new mongoose.Schema({
   settings: {
     timezone: {
       type: String,
-      default: 'Asia/Almaty',
+      default: "Asia/Almaty",
     },
     currency: {
       type: String,
-      default: '₸',
+      default: "₸",
     },
     theme: {
       type: String,
-      default: 'default',
+      default: "default",
     },
   },
   createdAt: {
@@ -46,7 +48,7 @@ const CoffeeShopSchema = new mongoose.Schema({
 const UserSchema = new mongoose.Schema({
   role: {
     type: String,
-    enum: ['client', 'employee', 'admin', 'administrator', 'author'],
+    enum: ["client", "employee", "admin", "administrator", "author"],
     required: true,
   },
   name: {
@@ -60,8 +62,10 @@ const UserSchema = new mongoose.Schema({
   },
   pin: {
     type: String,
-    required: function() {
-      return ['employee', 'admin', 'administrator', 'author'].includes(this.role);
+    required: function () {
+      return ["employee", "admin", "administrator", "author"].includes(
+        this.role
+      );
     },
   },
   coffeeShopId: {
@@ -74,45 +78,45 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-const CoffeeShop = mongoose.models.CoffeeShop || mongoose.model('CoffeeShop', CoffeeShopSchema);
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
+const CoffeeShop =
+  mongoose.models.CoffeeShop || mongoose.model("CoffeeShop", CoffeeShopSchema);
+const User = mongoose.models.User || mongoose.model("User", UserSchema);
 
 async function createDefaultShop() {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
+    console.log("Connected to MongoDB");
 
-    const existingShop = await CoffeeShop.findOne({ name: 'CafeLink Atyrau' });
+    const existingShop = await CoffeeShop.findOne({ name: "CafeLink Atyrau" });
     if (existingShop) {
-      console.log('Default coffee shop already exists');
+      console.log("Default coffee shop already exists");
       return;
     }
 
-    const adminUser = await User.findOne({ phone: '+77777777777' });
+    const adminUser = await User.findOne({ phone: "+77777777777" });
     if (!adminUser) {
-      console.log('Admin user not found. Please create admin user first.');
+      console.log("Admin user not found. Please create admin user first.");
       return;
     }
 
     const defaultShop = new CoffeeShop({
-      name: 'CafeLink Atyrau',
-      location: 'Atyrau, Kazakhstan',
-      address: 'Satpayev Street 1, Atyrau 060011, Kazakhstan',
+      name: "CafeLink Atyrau",
+      location: "Atyrau, Kazakhstan",
+      address: "Satpayev Street 1, Atyrau 060011, Kazakhstan",
       adminId: adminUser._id,
       isActive: true,
     });
 
     await defaultShop.save();
-    console.log('Default coffee shop created successfully');
-    console.log('Name: CafeLink Atyrau');
-    console.log('Location: Atyrau, Kazakhstan');
-    console.log('Admin:', adminUser.name);
-    
+    console.log("Default coffee shop created successfully");
+    console.log("Name: CafeLink Atyrau");
+    console.log("Location: Atyrau, Kazakhstan");
+    console.log("Admin:", adminUser.name);
   } catch (error) {
-    console.error('Error creating default coffee shop:', error);
+    console.error("Error creating default coffee shop:", error);
   } finally {
     await mongoose.disconnect();
-    console.log('Disconnected from MongoDB');
+    console.log("Disconnected from MongoDB");
   }
 }
 

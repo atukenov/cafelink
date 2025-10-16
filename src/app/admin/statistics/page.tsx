@@ -1,10 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, BarChart3, Users, Clock, CheckSquare, Star } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
+import { apiClient } from "@/lib/api";
+import {
+  ArrowLeft,
+  BarChart3,
+  CheckSquare,
+  Clock,
+  Star,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface EmployeeStatsWithName {
   _id: string;
@@ -23,23 +30,34 @@ interface EmployeeStatsWithName {
 
 export default function AdminStatisticsPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
+  const [user, setUser] = useState<{
+    _id: string;
+    name: string;
+    role: string;
+  } | null>(null);
   const [statistics, setStatistics] = useState<EmployeeStatsWithName[]>([]);
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
+  interface Employee {
+    _id: string;
+    name: string;
+    role: string;
+    phone: string;
+  }
+
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (!userData) {
-      router.push('/admin/login');
+      router.push("/admin/login");
       return;
     }
 
     const parsedUser = JSON.parse(userData);
-    if (!['admin', 'author'].includes(parsedUser.role)) {
-      router.push('/admin/login');
+    if (!["admin", "author"].includes(parsedUser.role)) {
+      router.push("/admin/login");
       return;
     }
 
@@ -51,13 +69,17 @@ export default function AdminStatisticsPage() {
     try {
       const [statisticsData, employeesData] = await Promise.all([
         apiClient.getStatistics(),
-        apiClient.getUsers()
+        apiClient.getUsers(),
       ]);
       setStatistics(statisticsData);
-      setEmployees(employeesData.filter((emp: any) => ['employee', 'administrator'].includes(emp.role)));
+      setEmployees(
+        employeesData.filter((emp: Employee) =>
+          ["employee", "administrator"].includes(emp.role)
+        )
+      );
     } catch (err) {
-      setError('Failed to load statistics');
-      console.error('Error loading statistics:', err);
+      setError("Failed to load statistics");
+      console.error("Error loading statistics:", err);
     } finally {
       setLoading(false);
     }
@@ -68,7 +90,10 @@ export default function AdminStatisticsPage() {
     return Math.round((completed / assigned) * 100);
   };
 
-  const calculateShiftAttendanceRate = (attended: number, scheduled: number) => {
+  const calculateShiftAttendanceRate = (
+    attended: number,
+    scheduled: number
+  ) => {
     if (scheduled === 0) return 0;
     return Math.round((attended / scheduled) * 100);
   };
@@ -82,17 +107,25 @@ export default function AdminStatisticsPage() {
 
   const getOverallStats = () => {
     const totalEmployees = statistics.length;
-    const totalTasksCompleted = statistics.reduce((sum, stat) => sum + stat.tasksCompleted, 0);
-    const totalOrdersProcessed = statistics.reduce((sum, stat) => sum + stat.ordersProcessed, 0);
-    const averageRating = statistics.length > 0 
-      ? statistics.reduce((sum, stat) => sum + stat.rating, 0) / statistics.length 
-      : 0;
+    const totalTasksCompleted = statistics.reduce(
+      (sum, stat) => sum + stat.tasksCompleted,
+      0
+    );
+    const totalOrdersProcessed = statistics.reduce(
+      (sum, stat) => sum + stat.ordersProcessed,
+      0
+    );
+    const averageRating =
+      statistics.length > 0
+        ? statistics.reduce((sum, stat) => sum + stat.rating, 0) /
+          statistics.length
+        : 0;
 
     return {
       totalEmployees,
       totalTasksCompleted,
       totalOrdersProcessed,
-      averageRating: Math.round(averageRating * 10) / 10
+      averageRating: Math.round(averageRating * 10) / 10,
     };
   };
 
@@ -119,18 +152,23 @@ export default function AdminStatisticsPage() {
   }
 
   const overallStats = getOverallStats();
-  const selectedEmployee = selectedEmployeeId 
-    ? statistics.find(stat => stat.employeeId === selectedEmployeeId)
+  const selectedEmployee = selectedEmployeeId
+    ? statistics.find((stat) => stat.employeeId === selectedEmployeeId)
     : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/admin/dashboard" className="p-2 hover:bg-gray-100 rounded-full">
+          <Link
+            href="/admin/dashboard"
+            className="p-2 hover:bg-gray-100 rounded-full"
+          >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-xl font-bold text-gray-800">Employee Statistics</h1>
+          <h1 className="text-xl font-bold text-gray-800">
+            Employee Statistics
+          </h1>
         </div>
       </div>
 
@@ -148,19 +186,27 @@ export default function AdminStatisticsPage() {
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{overallStats.totalEmployees}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {overallStats.totalEmployees}
+              </div>
               <div className="text-sm text-gray-600">Employees</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{overallStats.totalTasksCompleted}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {overallStats.totalTasksCompleted}
+              </div>
               <div className="text-sm text-gray-600">Tasks Done</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{overallStats.totalOrdersProcessed}</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {overallStats.totalOrdersProcessed}
+              </div>
               <div className="text-sm text-gray-600">Orders</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-amber-600">{overallStats.averageRating}</div>
+              <div className="text-2xl font-bold text-amber-600">
+                {overallStats.averageRating}
+              </div>
               <div className="text-sm text-gray-600">Avg Rating</div>
             </div>
           </div>
@@ -177,7 +223,7 @@ export default function AdminStatisticsPage() {
             className="w-full border border-gray-300 rounded-lg px-3 py-2"
           >
             <option value="">Choose an employee...</option>
-            {employees.map(employee => (
+            {employees.map((employee) => (
               <option key={employee._id} value={employee._id}>
                 {employee.name} ({employee.role})
               </option>
@@ -193,20 +239,30 @@ export default function AdminStatisticsPage() {
                 <Users className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">{selectedEmployee.employeeName}</h3>
-                <p className="text-sm text-gray-600">{selectedEmployee.employeePhone}</p>
+                <h3 className="font-semibold text-gray-800">
+                  {selectedEmployee.employeeName}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {selectedEmployee.employeePhone}
+                </p>
               </div>
               <div className="ml-auto flex items-center gap-1">
                 <Star className="w-5 h-5 text-amber-500" />
-                <span className="text-lg font-bold">{selectedEmployee.rating}</span>
+                <span className="text-lg font-bold">
+                  {selectedEmployee.rating}
+                </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="bg-blue-50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-blue-600">
-                  {Math.round((selectedEmployee.shiftsAttended / Math.max(selectedEmployee.shiftsScheduled, 1)) * 
-                    (selectedEmployee.shiftsAttended * 8))} hrs
+                  {Math.round(
+                    (selectedEmployee.shiftsAttended /
+                      Math.max(selectedEmployee.shiftsScheduled, 1)) *
+                      (selectedEmployee.shiftsAttended * 8)
+                  )}{" "}
+                  hrs
                 </div>
                 <div className="text-sm text-gray-600">Hours Worked</div>
               </div>
@@ -234,24 +290,36 @@ export default function AdminStatisticsPage() {
             </div>
 
             <div className="bg-gray-50 rounded-lg p-3">
-              <h4 className="font-medium text-gray-800 mb-2">Performance Summary</h4>
+              <h4 className="font-medium text-gray-800 mb-2">
+                Performance Summary
+              </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Task Completion Rate:</span>
                   <span className="font-medium">
-                    {calculateTaskCompletionRate(selectedEmployee.tasksCompleted, selectedEmployee.tasksAssigned)}%
+                    {calculateTaskCompletionRate(
+                      selectedEmployee.tasksCompleted,
+                      selectedEmployee.tasksAssigned
+                    )}
+                    %
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shift Attendance:</span>
                   <span className="font-medium">
-                    {calculateShiftAttendanceRate(selectedEmployee.shiftsAttended, selectedEmployee.shiftsScheduled)}%
+                    {calculateShiftAttendanceRate(
+                      selectedEmployee.shiftsAttended,
+                      selectedEmployee.shiftsScheduled
+                    )}
+                    %
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Avg Order Time:</span>
                   <span className="font-medium">
-                    {selectedEmployee.averageOrderTime > 0 ? formatTime(selectedEmployee.averageOrderTime) : 'N/A'}
+                    {selectedEmployee.averageOrderTime > 0
+                      ? formatTime(selectedEmployee.averageOrderTime)
+                      : "N/A"}
                   </span>
                 </div>
               </div>
@@ -259,7 +327,8 @@ export default function AdminStatisticsPage() {
 
             <div className="mt-3 pt-3 border-t">
               <p className="text-xs text-gray-500">
-                Last updated: {new Date(selectedEmployee.lastUpdated).toLocaleDateString()}
+                Last updated:{" "}
+                {new Date(selectedEmployee.lastUpdated).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -268,8 +337,12 @@ export default function AdminStatisticsPage() {
         {statistics.length === 0 ? (
           <div className="text-center py-12">
             <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">No statistics available</h2>
-            <p className="text-gray-600">Employee statistics will appear here once they start working</p>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              No statistics available
+            </h2>
+            <p className="text-gray-600">
+              Employee statistics will appear here once they start working
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -277,8 +350,12 @@ export default function AdminStatisticsPage() {
               <div key={stat._id} className="bg-white rounded-xl shadow-sm p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold text-gray-800">{stat.employeeName}</h3>
-                    <p className="text-sm text-gray-600">{stat.employeePhone}</p>
+                    <h3 className="font-semibold text-gray-800">
+                      {stat.employeeName}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {stat.employeePhone}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-amber-500" />
@@ -293,7 +370,11 @@ export default function AdminStatisticsPage() {
                       <span className="text-sm font-medium">Tasks</span>
                     </div>
                     <div className="text-lg font-bold text-green-600">
-                      {calculateTaskCompletionRate(stat.tasksCompleted, stat.tasksAssigned)}%
+                      {calculateTaskCompletionRate(
+                        stat.tasksCompleted,
+                        stat.tasksAssigned
+                      )}
+                      %
                     </div>
                     <div className="text-xs text-gray-600">
                       {stat.tasksCompleted}/{stat.tasksAssigned}
@@ -305,7 +386,11 @@ export default function AdminStatisticsPage() {
                       <span className="text-sm font-medium">Shifts</span>
                     </div>
                     <div className="text-lg font-bold text-blue-600">
-                      {calculateShiftAttendanceRate(stat.shiftsAttended, stat.shiftsScheduled)}%
+                      {calculateShiftAttendanceRate(
+                        stat.shiftsAttended,
+                        stat.shiftsScheduled
+                      )}
+                      %
                     </div>
                     <div className="text-xs text-gray-600">
                       {stat.shiftsAttended}/{stat.shiftsScheduled}
@@ -315,20 +400,27 @@ export default function AdminStatisticsPage() {
 
                 <div className="grid grid-cols-2 gap-4 pt-3 border-t">
                   <div className="text-center">
-                    <div className="text-sm text-gray-600">Orders Processed</div>
-                    <div className="text-lg font-bold text-purple-600">{stat.ordersProcessed}</div>
+                    <div className="text-sm text-gray-600">
+                      Orders Processed
+                    </div>
+                    <div className="text-lg font-bold text-purple-600">
+                      {stat.ordersProcessed}
+                    </div>
                   </div>
                   <div className="text-center">
                     <div className="text-sm text-gray-600">Avg Order Time</div>
                     <div className="text-lg font-bold text-orange-600">
-                      {stat.averageOrderTime > 0 ? formatTime(stat.averageOrderTime) : 'N/A'}
+                      {stat.averageOrderTime > 0
+                        ? formatTime(stat.averageOrderTime)
+                        : "N/A"}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-3 pt-3 border-t">
                   <p className="text-xs text-gray-500">
-                    Last updated: {new Date(stat.lastUpdated).toLocaleDateString()}
+                    Last updated:{" "}
+                    {new Date(stat.lastUpdated).toLocaleDateString()}
                   </p>
                 </div>
               </div>

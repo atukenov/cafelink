@@ -1,87 +1,145 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, MessageSquare, Send, Paperclip, Users } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import { Message } from '@/lib/types';
-import { useToast } from '@/components/Toast';
+import { useToast } from "@/components/Toast";
+import { ArrowLeft, MessageSquare, Paperclip, Send, Users } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function EmployeeChatPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [user, setUser] = useState<{ _id: string; name: string; role: string; color?: string } | null>(null);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [user, setUser] = useState<{
+    _id: string;
+    name: string;
+    role: string;
+    color?: string;
+  } | null>(null);
+  interface ChatMessage {
+    _id: string;
+    message: string;
+    userId: string;
+    userName: string;
+    userRole: "client" | "employee" | "administrator" | "admin" | "author";
+    createdAt: string;
+    readBy: { userId: string; readAt: string }[];
+  }
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const userColors = [
-    'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 
-    'bg-indigo-500', 'bg-yellow-500', 'bg-red-500', 'bg-teal-500'
-  ];
+  const userColors = React.useMemo(
+    () => [
+      "bg-blue-500",
+      "bg-green-500",
+      "bg-purple-500",
+      "bg-pink-500",
+      "bg-indigo-500",
+      "bg-yellow-500",
+      "bg-red-500",
+      "bg-teal-500",
+    ],
+    []
+  );
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (!userData) {
-      router.push('/employee/login');
+      router.push("/employee/login");
       return;
     }
 
     const parsedUser = JSON.parse(userData);
-    if (!['employee', 'admin', 'administrator', 'author'].includes(parsedUser.role)) {
-      router.push('/employee/login');
+    if (
+      !["employee", "admin", "administrator", "author"].includes(
+        parsedUser.role
+      )
+    ) {
+      router.push("/employee/login");
       return;
     }
 
-    const colorIndex = parsedUser._id.charCodeAt(parsedUser._id.length - 1) % userColors.length;
+    const colorIndex =
+      parsedUser._id.charCodeAt(parsedUser._id.length - 1) % userColors.length;
     parsedUser.color = userColors[colorIndex];
-    
+
     setUser(parsedUser);
     loadMessages();
 
-    if (typeof window !== 'undefined') {
-      import('@/lib/socket').then(({ socketManager }) => {
+    if (typeof window !== "undefined") {
+      import("@/lib/socket").then(({ socketManager }) => {
         socketManager.connect();
         socketManager.joinEmployee();
-        
-        socketManager.onNewMessage((data: any) => {
-          setMessages(prev => [...prev, data.message]);
+
+        socketManager.onNewMessage((data) => {
+          const messageId =
+            typeof data === "object" && "_id" in data
+              ? (data._id as string)
+              : Math.random().toString();
+          const convertedMessage: ChatMessage = {
+            _id: messageId,
+            message: data.message,
+            userId: data.userId,
+            userName: data.userName,
+            userRole: data.userRole,
+            createdAt:
+              typeof data.createdAt === "string"
+                ? data.createdAt
+                : new Date(data.createdAt).toISOString(),
+            readBy: data.readBy.map(
+              (rb: { userId: string; readAt: Date | string }) => ({
+                userId: rb.userId,
+                readAt:
+                  typeof rb.readAt === "string"
+                    ? rb.readAt
+                    : new Date(rb.readAt).toISOString(),
+              })
+            ),
+          };
+          setMessages((prev) => [...prev, convertedMessage]);
           scrollToBottom();
         });
 
-        socketManager.onUserTyping((data: any) => {
-          if (data.userId !== parsedUser._id) {
-            setTypingUsers(prev => [...prev.filter(id => id !== data.userId), data.userId]);
-            setTimeout(() => {
-              setTypingUsers(prev => prev.filter(id => id !== data.userId));
-            }, 3000);
+        socketManager.onUserTyping(
+          (data: { userId: string; userName: string }) => {
+            if (data.userId !== parsedUser._id) {
+              setTypingUsers((prev) => [
+                ...prev.filter((id) => id !== data.userId),
+                data.userId,
+              ]);
+              setTimeout(() => {
+                setTypingUsers((prev) =>
+                  prev.filter((id) => id !== data.userId)
+                );
+              }, 3000);
+            }
           }
-        });
+        );
 
         return () => {
           socketManager.offNewMessage();
         };
       });
     }
-  }, [router]);
+  }, [router, userColors]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const loadMessages = async () => {
     try {
-      const response = await fetch('/api/chat/messages');
+      const response = await fetch("/api/chat/messages");
       if (response.ok) {
         const data = await response.json();
         setMessages(data);
@@ -89,8 +147,8 @@ export default function EmployeeChatPage() {
         setMessages([]);
       }
     } catch (err) {
-      setError('Failed to load messages');
-      console.error('Error loading messages:', err);
+      setError("Failed to load messages");
+      console.error("Error loading messages:", err);
     } finally {
       setLoading(false);
     }
@@ -100,52 +158,54 @@ export default function EmployeeChatPage() {
     if (!newMessage.trim() || !user) return;
 
     try {
-      const response = await fetch('/api/chat/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/chat/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: newMessage.trim(),
           userId: user._id,
           userName: user.name,
-          userRole: user.role
-        })
+          userRole: user.role,
+        }),
       });
 
       if (response.ok) {
-        setNewMessage('');
+        setNewMessage("");
         setIsTyping(false);
-        
-        await fetch('/api/socket', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+
+        await fetch("/api/socket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            event: 'new-message',
-            data: { userId: user._id }
-          })
+            event: "new-message",
+            data: { userId: user._id },
+          }),
         });
       } else {
         showToast({
-          type: 'error',
-          title: 'Error',
-          message: 'Failed to send message'
+          type: "error",
+          title: "Error",
+          message: "Failed to send message",
         });
       }
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.error("Error sending message:", err);
       showToast({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to send message'
+        type: "error",
+        title: "Error",
+        message: "Failed to send message",
       });
     }
   };
 
   const handleTyping = (value: string) => {
     setNewMessage(value);
-    
+
     if (!isTyping && value.trim()) {
       setIsTyping(true);
-      socketManager.emitUserTyping(user?._id || '', user?.name || '');
+      import("@/lib/socket").then(({ socketManager }) => {
+        socketManager.emitUserTyping(user?._id || "", user?.name || "");
+      });
     }
 
     if (typingTimeoutRef.current) {
@@ -160,10 +220,12 @@ export default function EmployeeChatPage() {
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
+    const diffMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60)
+    );
+
     if (diffMinutes < 1) {
-      return 'Just now';
+      return "Just now";
     } else if (diffMinutes < 60) {
       return `${diffMinutes}m ago`;
     } else if (diffMinutes < 1440) {
@@ -205,7 +267,10 @@ export default function EmployeeChatPage() {
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/employee/dashboard" className="p-2 hover:bg-gray-100 rounded-full">
+          <Link
+            href="/employee/dashboard"
+            className="p-2 hover:bg-gray-100 rounded-full"
+          >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div className="flex items-center gap-2 flex-1">
@@ -235,35 +300,66 @@ export default function EmployeeChatPage() {
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MessageSquare className="w-8 h-8 text-gray-400" />
               </div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">Start the conversation</h2>
-              <p className="text-gray-600 text-sm">Send a message to your team</p>
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                Start the conversation
+              </h2>
+              <p className="text-gray-600 text-sm">
+                Send a message to your team
+              </p>
             </div>
           ) : (
             messages.map((message) => (
-              <div key={message._id} className={`flex ${message.userId === user?._id ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  message.userId === user?._id 
-                    ? 'bg-blue-500 text-white' 
-                    : 'bg-white border shadow-sm'
-                }`}>
+              <div
+                key={message._id}
+                className={`flex ${
+                  message.userId === user?._id ? "justify-end" : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.userId === user?._id
+                      ? "bg-blue-500 text-white"
+                      : "bg-white border shadow-sm"
+                  }`}
+                >
                   {message.userId !== user?._id && (
                     <div className="flex items-center gap-2 mb-1">
-                      <div className={`w-4 h-4 rounded-full ${getUserColor(message.userId)}`}></div>
-                      <span className="text-xs font-medium text-gray-600">{message.userName}</span>
-                      <span className="text-xs text-gray-400 capitalize">{message.userRole}</span>
+                      <div
+                        className={`w-4 h-4 rounded-full ${getUserColor(
+                          message.userId
+                        )}`}
+                      ></div>
+                      <span className="text-xs font-medium text-gray-600">
+                        {message.userName}
+                      </span>
+                      <span className="text-xs text-gray-400 capitalize">
+                        {message.userRole}
+                      </span>
                     </div>
                   )}
-                  <p className={`text-sm ${message.userId === user?._id ? 'text-white' : 'text-gray-800'}`}>
+                  <p
+                    className={`text-sm ${
+                      message.userId === user?._id
+                        ? "text-white"
+                        : "text-gray-800"
+                    }`}
+                  >
                     {message.message}
                   </p>
-                  <p className={`text-xs mt-1 ${message.userId === user?._id ? 'text-blue-100' : 'text-gray-500'}`}>
+                  <p
+                    className={`text-xs mt-1 ${
+                      message.userId === user?._id
+                        ? "text-blue-100"
+                        : "text-gray-500"
+                    }`}
+                  >
                     {formatTime(message.createdAt)}
                   </p>
                 </div>
               </div>
             ))
           )}
-          
+
           {/* Typing Indicators */}
           {typingUsers.length > 0 && (
             <div className="flex justify-start">
@@ -271,23 +367,37 @@ export default function EmployeeChatPage() {
                 <div className="flex items-center gap-2">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div
+                      className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.1s" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"
+                      style={{ animationDelay: "0.2s" }}
+                    ></div>
                   </div>
-                  <span className="text-xs text-gray-600">Someone is typing...</span>
+                  <span className="text-xs text-gray-600">
+                    Someone is typing...
+                  </span>
                 </div>
               </div>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
 
         {/* Message Input */}
         <div className="bg-white border-t p-4">
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => showToast({ type: 'info', title: 'Attachments', message: 'Coming soon!' })}
+            <button
+              onClick={() =>
+                showToast({
+                  type: "info",
+                  title: "Attachments",
+                  message: "Coming soon!",
+                })
+              }
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
             >
               <Paperclip className="w-5 h-5" />
@@ -297,7 +407,7 @@ export default function EmployeeChatPage() {
                 type="text"
                 value={newMessage}
                 onChange={(e) => handleTyping(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                 placeholder="Type a message..."
                 className="w-full border border-gray-300 rounded-full px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
