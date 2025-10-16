@@ -154,7 +154,7 @@ export default function OrderStatusPage() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
           <Link href="/orders" className="p-2 hover:bg-gray-100 rounded-full">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
           </Link>
           <h1 className="text-xl font-bold text-gray-800">Order Status</h1>
         </div>

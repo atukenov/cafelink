@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, TrendingUp, TrendingDown, Clock } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useShop } from '@/contexts/ShopContext';
-import { apiClient } from '@/lib/api';
-import { LoyaltyTransaction } from '@/lib/types';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { Card } from '@/components/ui/Card';
+import { Card } from "@/components/ui/Card";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useShop } from "@/contexts/ShopContext";
+import { useAuth } from "@/hooks/useAuth";
+import { apiClient } from "@/lib/api";
+import { LoyaltyTransaction } from "@/lib/types";
+import { ArrowLeft, Clock, TrendingDown, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function LoyaltyHistoryPage() {
-  const { user, loading: authLoading } = useAuth({ requiredRoles: ['client'] });
+  const { user, loading: authLoading } = useAuth({ requiredRoles: ["client"] });
   const { selectedShop } = useShop();
   const [transactions, setTransactions] = useState<LoyaltyTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,12 +24,15 @@ export default function LoyaltyHistoryPage() {
 
   const loadTransactions = async () => {
     if (!user || !selectedShop) return;
-    
+
     try {
-      const response = await apiClient.getLoyaltyTransactions(user._id, selectedShop._id);
+      const response = await apiClient.getLoyaltyTransactions(
+        user._id,
+        selectedShop._id
+      );
       setTransactions(response.transactions || []);
     } catch (error) {
-      console.error('Failed to load transactions:', error);
+      console.error("Failed to load transactions:", error);
     } finally {
       setLoading(false);
     }
@@ -37,9 +40,9 @@ export default function LoyaltyHistoryPage() {
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case 'earn':
+      case "earn":
         return <TrendingUp className="w-5 h-5 text-green-600" />;
-      case 'redeem':
+      case "redeem":
         return <TrendingDown className="w-5 h-5 text-red-600" />;
       default:
         return <Clock className="w-5 h-5 text-gray-600" />;
@@ -48,12 +51,12 @@ export default function LoyaltyHistoryPage() {
 
   const getTransactionColor = (type: string) => {
     switch (type) {
-      case 'earn':
-        return 'text-green-600';
-      case 'redeem':
-        return 'text-red-600';
+      case "earn":
+        return "text-green-600";
+      case "redeem":
+        return "text-red-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
@@ -66,7 +69,7 @@ export default function LoyaltyHistoryPage() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
           <Link href="/loyalty" className="p-2 hover:bg-gray-100 rounded-full">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
           </Link>
           <h1 className="text-xl font-bold text-gray-800">Points History</h1>
         </div>
@@ -76,8 +79,12 @@ export default function LoyaltyHistoryPage() {
         {transactions.length === 0 ? (
           <Card className="p-6 text-center">
             <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="font-semibold text-gray-800 mb-2">No Transaction History</h3>
-            <p className="text-gray-600">Start earning points by making purchases!</p>
+            <h3 className="font-semibold text-gray-800 mb-2">
+              No Transaction History
+            </h3>
+            <p className="text-gray-600">
+              Start earning points by making purchases!
+            </p>
           </Card>
         ) : (
           <div className="space-y-3">
@@ -88,9 +95,11 @@ export default function LoyaltyHistoryPage() {
                     {getTransactionIcon(transaction.type)}
                     <div>
                       <div className="font-medium text-gray-800 capitalize">
-                        {transaction.type === 'earn' ? 'Points Earned' : 
-                         transaction.type === 'redeem' ? 'Points Redeemed' : 
-                         transaction.type}
+                        {transaction.type === "earn"
+                          ? "Points Earned"
+                          : transaction.type === "redeem"
+                          ? "Points Redeemed"
+                          : transaction.type}
                       </div>
                       <div className="text-sm text-gray-600">
                         {new Date(transaction.createdAt).toLocaleDateString()}
@@ -102,8 +111,13 @@ export default function LoyaltyHistoryPage() {
                       )}
                     </div>
                   </div>
-                  <div className={`font-bold ${getTransactionColor(transaction.type)}`}>
-                    {transaction.points > 0 ? '+' : ''}{transaction.points}
+                  <div
+                    className={`font-bold ${getTransactionColor(
+                      transaction.type
+                    )}`}
+                  >
+                    {transaction.points > 0 ? "+" : ""}
+                    {transaction.points}
                   </div>
                 </div>
               </Card>

@@ -1,14 +1,14 @@
 "use client";
 
 import QRCode from "@/components/QRCode";
+import { useShop } from "@/contexts/ShopContext";
+import { apiClient } from "@/lib/api";
 import { socketManager } from "@/lib/socket";
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, CreditCard, Banknote } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import { CartItem } from '@/lib/types';
-import { useShop } from '@/contexts/ShopContext';
+import { CartItem } from "@/lib/types";
+import { ArrowLeft, Banknote, CreditCard } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -96,26 +96,26 @@ export default function CheckoutPage() {
         totalPrice: getTotalPrice(),
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
-        coffeeShopId: selectedShop?._id || 'default-shop-id',
+        coffeeShopId: selectedShop?._id || "default-shop-id",
       };
 
       const order = await apiClient.createOrder(orderData);
-      
-      const userData = localStorage.getItem('user');
+
+      const userData = localStorage.getItem("user");
       if (userData) {
         const user = JSON.parse(userData);
         try {
           await apiClient.awardPoints({
             userId: user._id,
-            shopId: selectedShop?._id || 'default-shop-id',
+            shopId: selectedShop?._id || "default-shop-id",
             orderId: order._id,
-            amountPaid: getTotalPrice()
+            amountPaid: getTotalPrice(),
           });
         } catch (err) {
-          console.error('Failed to award loyalty points:', err);
+          console.error("Failed to award loyalty points:", err);
         }
       }
-      
+
       const socket = socketManager.connect();
       socketManager.emitNewOrder(order);
 
@@ -146,7 +146,7 @@ export default function CheckoutPage() {
               onClick={() => setShowQR(false)}
               className="p-2 hover:bg-gray-100 rounded-full"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 text-gray-400" />
             </button>
             <h1 className="text-xl font-bold text-gray-800">Kaspi Payment</h1>
           </div>
@@ -193,7 +193,7 @@ export default function CheckoutPage() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
           <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
           </Link>
           <h1 className="text-xl font-bold text-gray-800">Checkout</h1>
         </div>

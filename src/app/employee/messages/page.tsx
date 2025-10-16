@@ -271,7 +271,7 @@ export default function EmployeeChatPage() {
             href="/employee/dashboard"
             className="p-2 hover:bg-gray-100 rounded-full"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
           </Link>
           <div className="flex items-center gap-2 flex-1">
             <Users className="w-5 h-5 text-blue-600" />

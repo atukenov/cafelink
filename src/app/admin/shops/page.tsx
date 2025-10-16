@@ -1,17 +1,21 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Plus, MapPin, Edit, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import { CoffeeShop, User } from '@/lib/types';
-import { useToast } from '@/components/Toast';
+import { useToast } from "@/components/Toast";
+import { apiClient } from "@/lib/api";
+import { CoffeeShop, User } from "@/lib/types";
+import { ArrowLeft, Edit, MapPin, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 export default function AdminShopsPage() {
   const router = useRouter();
   const { showToast } = useToast();
-  const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
+  const [user, setUser] = useState<{
+    _id: string;
+    name: string;
+    role: string;
+  } | null>(null);
   const [shops, setShops] = useState<CoffeeShop[]>([]);
   const [admins, setAdmins] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,22 +23,22 @@ export default function AdminShopsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingShop, setEditingShop] = useState<CoffeeShop | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    location: '',
-    address: '',
-    adminId: ''
+    name: "",
+    location: "",
+    address: "",
+    adminId: "",
   });
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (!userData) {
-      router.push('/admin/login');
+      router.push("/admin/login");
       return;
     }
 
     const parsedUser = JSON.parse(userData);
-    if (!['admin', 'author'].includes(parsedUser.role)) {
-      router.push('/admin/login');
+    if (!["admin", "author"].includes(parsedUser.role)) {
+      router.push("/admin/login");
       return;
     }
 
@@ -46,13 +50,15 @@ export default function AdminShopsPage() {
     try {
       const [shopsData, usersData] = await Promise.all([
         apiClient.getCoffeeShops(),
-        apiClient.getUsers()
+        apiClient.getUsers(),
       ]);
       setShops(shopsData);
-      setAdmins(usersData.filter((u: User) => ['admin', 'author'].includes(u.role)));
+      setAdmins(
+        usersData.filter((u: User) => ["admin", "author"].includes(u.role))
+      );
     } catch (err) {
-      setError('Failed to load data');
-      console.error('Error loading data:', err);
+      setError("Failed to load data");
+      console.error("Error loading data:", err);
     } finally {
       setLoading(false);
     }
@@ -60,8 +66,13 @@ export default function AdminShopsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.location || !formData.address || !formData.adminId) {
-      setError('All fields are required');
+    if (
+      !formData.name ||
+      !formData.location ||
+      !formData.address ||
+      !formData.adminId
+    ) {
+      setError("All fields are required");
       return;
     }
 
@@ -71,28 +82,28 @@ export default function AdminShopsPage() {
           name: formData.name,
           location: formData.location,
           address: formData.address,
-          isActive: true
+          isActive: true,
         });
         showToast({
-          type: 'success',
-          title: 'Shop Updated',
-          message: 'Coffee shop has been updated successfully',
+          type: "success",
+          title: "Shop Updated",
+          message: "Coffee shop has been updated successfully",
         });
       } else {
         await apiClient.createCoffeeShop(formData);
         showToast({
-          type: 'success',
-          title: 'Shop Created',
-          message: 'Coffee shop has been created successfully',
+          type: "success",
+          title: "Shop Created",
+          message: "Coffee shop has been created successfully",
         });
       }
-      
+
       setShowForm(false);
       setEditingShop(null);
-      setFormData({ name: '', location: '', address: '', adminId: '' });
+      setFormData({ name: "", location: "", address: "", adminId: "" });
       await loadData();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save shop');
+      setError(err instanceof Error ? err.message : "Failed to save shop");
     }
   };
 
@@ -102,30 +113,30 @@ export default function AdminShopsPage() {
       name: shop.name,
       location: shop.location,
       address: shop.address,
-      adminId: shop.adminId
+      adminId: shop.adminId,
     });
     setShowForm(true);
   };
 
   const handleDelete = async (shopId: string) => {
-    if (!confirm('Are you sure you want to delete this coffee shop?')) return;
+    if (!confirm("Are you sure you want to delete this coffee shop?")) return;
 
     try {
       await apiClient.deleteCoffeeShop(shopId);
       showToast({
-        type: 'success',
-        title: 'Shop Deleted',
-        message: 'Coffee shop has been deleted successfully',
+        type: "success",
+        title: "Shop Deleted",
+        message: "Coffee shop has been deleted successfully",
       });
       await loadData();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to delete shop');
+      setError(err instanceof Error ? err.message : "Failed to delete shop");
     }
   };
 
   const getAdminName = (adminId: string) => {
-    const admin = admins.find(a => a._id === adminId);
-    return admin?.name || 'Unknown';
+    const admin = admins.find((a) => a._id === adminId);
+    return admin?.name || "Unknown";
   };
 
   if (!user) {
@@ -155,8 +166,11 @@ export default function AdminShopsPage() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin/dashboard" className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft className="w-5 h-5" />
+            <Link
+              href="/admin/dashboard"
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-400" />
             </Link>
             <h1 className="text-xl font-bold text-gray-800">Coffee Shops</h1>
           </div>
@@ -200,10 +214,14 @@ export default function AdminShopsPage() {
                       Admin: {getAdminName(shop.adminId)}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        shop.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {shop.isActive ? 'Active' : 'Inactive'}
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${
+                          shop.isActive
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {shop.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
@@ -214,7 +232,7 @@ export default function AdminShopsPage() {
                     >
                       <Edit className="w-4 h-4" />
                     </button>
-                    {user.role === 'author' && (
+                    {user.role === "author" && (
                       <button
                         onClick={() => handleDelete(shop._id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-full"
@@ -234,10 +252,10 @@ export default function AdminShopsPage() {
             <div className="bg-white rounded-xl max-w-md w-full">
               <div className="p-4 border-b">
                 <h3 className="text-lg font-semibold">
-                  {editingShop ? 'Edit Coffee Shop' : 'Create New Coffee Shop'}
+                  {editingShop ? "Edit Coffee Shop" : "Create New Coffee Shop"}
                 </h3>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="p-4 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -246,7 +264,9 @@ export default function AdminShopsPage() {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, name: e.target.value }))
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                     placeholder="Coffee Shop Name"
                     required
@@ -260,7 +280,12 @@ export default function AdminShopsPage() {
                   <input
                     type="text"
                     value={formData.location}
-                    onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        location: e.target.value,
+                      }))
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                     placeholder="City, District"
                     required
@@ -273,7 +298,12 @@ export default function AdminShopsPage() {
                   </label>
                   <textarea
                     value={formData.address}
-                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 h-20"
                     placeholder="Full address"
                     required
@@ -286,12 +316,17 @@ export default function AdminShopsPage() {
                   </label>
                   <select
                     value={formData.adminId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, adminId: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        adminId: e.target.value,
+                      }))
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                     required
                   >
                     <option value="">Select Admin</option>
-                    {admins.map(admin => (
+                    {admins.map((admin) => (
                       <option key={admin._id} value={admin._id}>
                         {admin.name} ({admin.role})
                       </option>
@@ -305,7 +340,12 @@ export default function AdminShopsPage() {
                     onClick={() => {
                       setShowForm(false);
                       setEditingShop(null);
-                      setFormData({ name: '', location: '', address: '', adminId: '' });
+                      setFormData({
+                        name: "",
+                        location: "",
+                        address: "",
+                        adminId: "",
+                      });
                     }}
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg"
                   >
@@ -315,7 +355,7 @@ export default function AdminShopsPage() {
                     type="submit"
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg"
                   >
-                    {editingShop ? 'Update' : 'Create'} Shop
+                    {editingShop ? "Update" : "Create"} Shop
                   </button>
                 </div>
               </form>

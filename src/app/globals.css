@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+::placeholder {
+  color: rgb(208, 208, 208); /* Replace with your desired color code or name */
+}
+
+select {
+  color: rgb(208, 208, 208);
+}
+
+h3 {
+  color: rgb(57, 57, 57);
+}

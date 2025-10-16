@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Users, Phone, Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
+import { apiClient } from "@/lib/api";
+import { ArrowLeft, Lock, Phone, Users } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
 export default function EmployeeLoginPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState('');
-  const [pin, setPin] = useState('');
+  const [phone, setPhone] = useState("");
+  const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showOTP, setShowOTP] = useState(false);
-  const [mockOTP, setMockOTP] = useState('');
+  const [mockOTP, setMockOTP] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!phone.trim() || !pin.trim()) {
-      setError('Please fill in all fields');
+      setError("Please fill in all fields");
       return;
     }
 
@@ -27,27 +27,36 @@ export default function EmployeeLoginPage() {
     setError(null);
 
     try {
-      const response = await apiClient.login({ phone: phone.trim(), pin: pin.trim() });
-      
-      if (!['employee', 'admin', 'administrator', 'author'].includes(response.role)) {
-        setError('Access denied. Employee, admin, administrator, or author account required.');
+      const response = await apiClient.login({
+        phone: phone.trim(),
+        pin: pin.trim(),
+      });
+
+      if (
+        !["employee", "admin", "administrator", "author"].includes(
+          response.role
+        )
+      ) {
+        setError(
+          "Access denied. Employee, admin, administrator, or author account required."
+        );
         return;
       }
 
       apiClient.setToken(response.token);
-      localStorage.setItem('user', JSON.stringify(response));
-      
+      localStorage.setItem("user", JSON.stringify(response));
+
       setMockOTP(response.mockOTP);
       setShowOTP(true);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   const handleOTPVerification = () => {
-    router.push('/employee/dashboard');
+    router.push("/employee/dashboard");
   };
 
   if (showOTP) {
@@ -57,12 +66,15 @@ export default function EmployeeLoginPage() {
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Lock className="w-8 h-8 text-blue-600" />
           </div>
-          
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Verification Code</h1>
+
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            Verification Code
+          </h1>
           <p className="text-gray-600 mb-6">
-            Your verification code is: <span className="font-bold text-blue-600">{mockOTP}</span>
+            Your verification code is:{" "}
+            <span className="font-bold text-blue-600">{mockOTP}</span>
           </p>
-          
+
           <div className="space-y-4">
             <button
               onClick={handleOTPVerification}
@@ -70,7 +82,7 @@ export default function EmployeeLoginPage() {
             >
               Verify & Continue
             </button>
-            
+
             <button
               onClick={() => setShowOTP(false)}
               className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-xl transition-colors"
@@ -89,7 +101,7 @@ export default function EmployeeLoginPage() {
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
           </Link>
           <h1 className="text-xl font-bold text-gray-800">Employee Login</h1>
         </div>
@@ -99,7 +111,9 @@ export default function EmployeeLoginPage() {
           <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Users className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Welcome Back
+          </h2>
           <p className="text-gray-600">Sign in to access your dashboard</p>
         </div>
 
@@ -151,13 +165,15 @@ export default function EmployeeLoginPage() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 
         {/* Demo Info */}
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800 font-medium mb-2">Demo Credentials:</p>
+          <p className="text-sm text-blue-800 font-medium mb-2">
+            Demo Credentials:
+          </p>
           <p className="text-xs text-blue-600">
             Use any phone number and PIN for demo purposes
           </p>

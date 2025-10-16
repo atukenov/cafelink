@@ -237,7 +237,7 @@ export default function AdminMenuPage() {
             href="/admin/dashboard"
             className="p-2 hover:bg-gray-100 rounded-full"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
           </Link>
           <h1 className="text-xl font-bold text-gray-800">Menu Management</h1>
         </div>

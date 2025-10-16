@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, User, Phone } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { ArrowLeft, Phone, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
 
 export default function ClientLoginPage() {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim() || !phone.trim()) {
-      setError('Please fill in all fields');
+      setError("Please fill in all fields");
       return;
     }
 
@@ -28,16 +28,16 @@ export default function ClientLoginPage() {
         _id: `client_${Date.now()}`,
         name: name.trim(),
         phone: phone.trim(),
-        role: 'client'
+        role: "client",
       };
 
-      localStorage.setItem('client', JSON.stringify(clientData));
-      
-      const returnUrl = localStorage.getItem('returnUrl') || '/orders';
-      localStorage.removeItem('returnUrl');
+      localStorage.setItem("client", JSON.stringify(clientData));
+
+      const returnUrl = localStorage.getItem("returnUrl") || "/orders";
+      localStorage.removeItem("returnUrl");
       router.push(returnUrl);
     } catch (err: unknown) {
-      setError('Login failed. Please try again.');
+      setError("Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export default function ClientLoginPage() {
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div className="flex items-center gap-3 mb-8">
           <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 text-gray-400" />
           </Link>
           <h1 className="text-xl font-bold text-gray-800">Client Login</h1>
         </div>
@@ -107,14 +107,17 @@ export default function ClientLoginPage() {
             disabled={loading}
             className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 
         <div className="mt-8 p-4 bg-amber-50 rounded-lg">
-          <p className="text-sm text-amber-800 font-medium mb-2">Quick Access:</p>
+          <p className="text-sm text-amber-800 font-medium mb-2">
+            Quick Access:
+          </p>
           <p className="text-xs text-amber-600">
-            Enter your name and phone number to access your order history and track current orders.
+            Enter your name and phone number to access your order history and
+            track current orders.
           </p>
         </div>
       </div>

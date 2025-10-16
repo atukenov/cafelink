@@ -1,17 +1,28 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Shield, Users, Coffee, UserCheck, Settings, Clock, CheckSquare, MessageSquare, BarChart3, Megaphone, MapPin } from 'lucide-react';
-import ShopSelector from '@/components/ui/ShopSelector';
-import { useAuth } from '@/hooks/useAuth';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { Card, ActionCard } from '@/components/ui/Card';
+import { ActionCard, Card } from "@/components/ui/Card";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ShopSelector from "@/components/ui/ShopSelector";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  ArrowLeft,
+  BarChart3,
+  CheckSquare,
+  Clock,
+  Coffee,
+  MapPin,
+  Megaphone,
+  MessageSquare,
+  Settings,
+  Shield,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function AdminDashboardPage() {
-  const { user, loading, logout } = useAuth({ 
-    requiredRoles: ['admin', 'author'],
-    redirectTo: '/staff-login'
+  const { user, loading, logout } = useAuth({
+    requiredRoles: ["admin", "author"],
+    redirectTo: "/staff-login",
   });
 
   if (loading || !user) {
@@ -24,7 +35,7 @@ export default function AdminDashboardPage() {
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 text-gray-400" />
             </Link>
             <h1 className="text-xl font-bold text-gray-800">Admin Dashboard</h1>
           </div>
@@ -39,15 +50,19 @@ export default function AdminDashboardPage() {
 
       <div className="max-w-md mx-auto p-4">
         <ShopSelector />
-        
+
         <Card className="p-6 mb-6">
           <div className="text-center">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-blue-600" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-1">Welcome, {user.name}</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-1">
+              Welcome, {user.name}
+            </h2>
             <p className="text-blue-600 font-medium">Coffee Shop Admin</p>
-            <p className="text-sm text-gray-600 mt-2">Manage your coffee shop operations</p>
+            <p className="text-sm text-gray-600 mt-2">
+              Manage your coffee shop operations
+            </p>
           </div>
         </Card>
 

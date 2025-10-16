@@ -184,7 +184,7 @@ export default function MenuPage() {
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 text-gray-400" />
             </Link>
             <h1 className="text-xl font-bold text-gray-800">Menu</h1>
           </div>
@@ -193,7 +193,7 @@ export default function MenuPage() {
             href="/cart"
             className="relative p-2 hover:bg-gray-100 rounded-full"
           >
-            <ShoppingCart className="w-6 h-6" />
+            <ShoppingCart className="w-6 h-6 text-gray-400" />
             {getCartItemCount() > 0 && (
               <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {getCartItemCount()}

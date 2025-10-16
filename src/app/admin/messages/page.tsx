@@ -1,34 +1,38 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Plus, MessageSquare, Send } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import { Message } from '@/lib/types';
+import { apiClient } from "@/lib/api";
+import { Message } from "@/lib/types";
+import { ArrowLeft, MessageSquare, Plus, Send } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 export default function AdminMessagesPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ _id: string; name: string; role: string } | null>(null);
+  const [user, setUser] = useState<{
+    _id: string;
+    name: string;
+    role: string;
+  } | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    body: ''
+    title: "",
+    body: "",
   });
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (!userData) {
-      router.push('/admin/login');
+      router.push("/admin/login");
       return;
     }
 
     const parsedUser = JSON.parse(userData);
-    if (!['admin', 'author'].includes(parsedUser.role)) {
-      router.push('/admin/login');
+    if (!["admin", "author"].includes(parsedUser.role)) {
+      router.push("/admin/login");
       return;
     }
 
@@ -41,8 +45,8 @@ export default function AdminMessagesPage() {
       const data = await apiClient.getMessages();
       setMessages(data);
     } catch (err) {
-      setError('Failed to load messages');
-      console.error('Error loading messages:', err);
+      setError("Failed to load messages");
+      console.error("Error loading messages:", err);
     } finally {
       setLoading(false);
     }
@@ -51,31 +55,31 @@ export default function AdminMessagesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.body) {
-      setError('Title and message are required');
+      setError("Title and message are required");
       return;
     }
 
     try {
       const newMessage = await apiClient.createMessage(formData);
-      
+
       setShowForm(false);
-      setFormData({ title: '', body: '' });
+      setFormData({ title: "", body: "" });
       await loadMessages();
 
-      const response = await fetch('/api/socket', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/socket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          event: 'new-message',
-          data: newMessage
-        })
+          event: "new-message",
+          data: newMessage,
+        }),
       });
 
       if (!response.ok) {
-        console.error('Failed to broadcast message');
+        console.error("Failed to broadcast message");
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      setError(err instanceof Error ? err.message : "Failed to send message");
     }
   };
 
@@ -86,9 +90,9 @@ export default function AdminMessagesPage() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 1) {
-      return 'Today';
+      return "Today";
     } else if (diffDays === 2) {
-      return 'Yesterday';
+      return "Yesterday";
     } else if (diffDays <= 7) {
       return `${diffDays - 1} days ago`;
     } else {
@@ -123,8 +127,11 @@ export default function AdminMessagesPage() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/admin/dashboard" className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft className="w-5 h-5" />
+            <Link
+              href="/admin/dashboard"
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-400" />
             </Link>
             <h1 className="text-xl font-bold text-gray-800">Messages</h1>
           </div>
@@ -147,8 +154,12 @@ export default function AdminMessagesPage() {
         {messages.length === 0 ? (
           <div className="text-center py-12">
             <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">No messages sent</h2>
-            <p className="text-gray-600 mb-4">Send your first announcement to employees</p>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              No messages sent
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Send your first announcement to employees
+            </p>
             <button
               onClick={() => setShowForm(true)}
               className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
@@ -159,12 +170,15 @@ export default function AdminMessagesPage() {
         ) : (
           <div className="space-y-4">
             {messages.map((message) => (
-              <div key={message._id} className="bg-white rounded-xl shadow-sm p-4">
+              <div
+                key={message._id}
+                className="bg-white rounded-xl shadow-sm p-4"
+              >
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <MessageSquare className="w-5 h-5 text-purple-600" />
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-gray-800 truncate pr-2">
@@ -174,7 +188,7 @@ export default function AdminMessagesPage() {
                         {formatDate(message.createdAt)}
                       </span>
                     </div>
-                    
+
                     <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
                       {message.body}
                     </p>
@@ -189,9 +203,11 @@ export default function AdminMessagesPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl max-w-md w-full">
               <div className="p-4 border-b">
-                <h3 className="text-lg font-semibold">Send Message to Employees</h3>
+                <h3 className="text-lg font-semibold">
+                  Send Message to Employees
+                </h3>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="p-4 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -200,7 +216,12 @@ export default function AdminMessagesPage() {
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }))
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                     placeholder="Message title..."
                     required
@@ -213,7 +234,9 @@ export default function AdminMessagesPage() {
                   </label>
                   <textarea
                     value={formData.body}
-                    onChange={(e) => setFormData(prev => ({ ...prev, body: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, body: e.target.value }))
+                    }
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 h-32"
                     placeholder="Type your message here..."
                     required
@@ -225,7 +248,7 @@ export default function AdminMessagesPage() {
                     type="button"
                     onClick={() => {
                       setShowForm(false);
-                      setFormData({ title: '', body: '' });
+                      setFormData({ title: "", body: "" });
                     }}
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg"
                   >
@@ -247,7 +270,8 @@ export default function AdminMessagesPage() {
         <div className="mt-8 bg-purple-50 rounded-xl p-4">
           <h4 className="font-medium text-purple-800 mb-2">Live Messaging</h4>
           <p className="text-sm text-purple-600">
-            Messages are sent instantly to all employees and appear as live notifications in their interface.
+            Messages are sent instantly to all employees and appear as live
+            notifications in their interface.
           </p>
         </div>
       </div>

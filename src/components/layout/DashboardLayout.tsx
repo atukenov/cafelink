@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useAuth } from "@/hooks/useAuth";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({
   children,
   title,
-  backHref = '/',
+  backHref = "/",
   showLogout = false,
 }: DashboardLayoutProps) {
   const { user, loading, logout } = useAuth();
@@ -34,8 +34,11 @@ export default function DashboardLayout({
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href={backHref} className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft className="w-5 h-5" />
+            <Link
+              href={backHref}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-400" />
             </Link>
             <h1 className="text-xl font-bold text-gray-800">{title}</h1>
           </div>
@@ -49,10 +52,8 @@ export default function DashboardLayout({
           )}
         </div>
       </div>
-      
-      <div className="max-w-md mx-auto p-4">
-        {children}
-      </div>
+
+      <div className="max-w-md mx-auto p-4">{children}</div>
     </div>
   );
 }
