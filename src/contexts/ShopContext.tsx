@@ -45,20 +45,22 @@ export const ShopProvider: React.FC<ShopProviderProps> = ({ children }) => {
       setError(null);
 
       // Get all active shops first
-      console.log('Fetching shops...');
+      console.log("Fetching shops...");
       const shops = await apiClient.getCoffeeShops();
-      console.log('Fetched shops:', shops);
-      
+      console.log("Fetched shops:", shops);
+
       const activeShops = shops.filter((shop: CoffeeShop) => shop.isActive);
-      console.log('Active shops:', activeShops);
-      
+      console.log("Active shops:", activeShops);
+
       // For regular customers, show all active shops
       setUserShops(activeShops);
 
       // Try to restore previously selected shop
       const savedShopId = localStorage.getItem("selectedShopId");
       if (savedShopId) {
-        const savedShop = activeShops.find((shop: CoffeeShop) => shop._id === savedShopId);
+        const savedShop = activeShops.find(
+          (shop: CoffeeShop) => shop._id === savedShopId
+        );
         if (savedShop) {
           setSelectedShop(savedShop);
         } else if (activeShops.length > 0) {

@@ -6,8 +6,8 @@ import { useShop } from "@/contexts/ShopContext";
 import { apiClient } from "@/lib/api";
 import { AdditionalItem, CartItem, Product } from "@/lib/types";
 import { AlertTriangle, ArrowLeft, Plus, ShoppingCart, X } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 export default function MenuPage() {
@@ -156,7 +156,7 @@ export default function MenuPage() {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
-    if (shopError || error) {
+  if (shopError || error) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm sticky top-0 z-10">
@@ -170,18 +170,16 @@ export default function MenuPage() {
             <ShopSelector className="mt-2" />
           </div>
         </div>
-        
+
         <div className="flex items-center justify-center min-h-[50vh]">
           <div className="text-center">
             <div className="text-red-500 mb-4">
               <AlertTriangle className="w-12 h-12 mx-auto" />
             </div>
             <p className="text-gray-600">
-              {shopError ? 'Failed to load shops.' : 'Failed to load menu.'}
+              {shopError ? "Failed to load shops." : "Failed to load menu."}
               <br />
-              <span className="text-sm text-gray-500">
-                Please try again
-              </span>
+              <span className="text-sm text-gray-500">Please try again</span>
             </p>
             <button
               onClick={loadProducts}
@@ -247,7 +245,9 @@ export default function MenuPage() {
                       height={80}
                       className="w-20 h-20 rounded-lg object-cover"
                       onError={() => {
-                        const img = document.querySelector(`[alt="${product.name}"]`) as HTMLImageElement;
+                        const img = document.querySelector(
+                          `[alt="${product.name}"]`
+                        ) as HTMLImageElement;
                         if (img) img.src = "/placeholder-coffee.jpg";
                       }}
                     />
