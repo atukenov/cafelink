@@ -3,23 +3,12 @@ import dbConnect from '@/lib/mongodb';
 import CoffeeShop from '@/models/CoffeeShop';
 import { authenticateUser } from '@/lib/auth-middleware';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { user, error } = await authenticateUser(request);
-    if (error || !user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
-
     await dbConnect();
     
-    let shops;
-    if (user.role === 'author') {
-      shops = await CoffeeShop.find({}).sort({ createdAt: -1 });
-    } else if (user.role === 'admin') {
-      shops = await CoffeeShop.find({ adminId: user._id }).sort({ createdAt: -1 });
-    } else {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
-    }
+    // Get all active shops for public access
+    const shops = await CoffeeShop.find({ isActive: true }).sort({ createdAt: -1 });
 
     return NextResponse.json(shops);
   } catch (error) {

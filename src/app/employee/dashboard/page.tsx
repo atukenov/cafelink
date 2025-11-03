@@ -10,17 +10,7 @@ import { useSocket } from "@/hooks/useSocket";
 import { useUnreadCounts } from "@/hooks/useUnreadCounts";
 import { apiClient } from "@/lib/api";
 import { formatDuration, formatTime } from "@/lib/utils";
-import {
-  Calendar,
-  CheckSquare,
-  Clock,
-  Coffee,
-  LogOut,
-  MessageSquare,
-  Play,
-  Square,
-  User,
-} from "lucide-react";
+import { Calendar, Coffee, LogOut, Play, Square, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -35,8 +25,7 @@ export default function EmployeeDashboardPage() {
     redirectTo: "/staff-login",
   });
   const { selectedShop } = useShop();
-  const { unreadCounts, markMessagesAsRead, markOrdersAsRead } =
-    useUnreadCounts();
+  const { unreadCounts, markOrdersAsRead } = useUnreadCounts();
   interface ScheduledShift {
     _id: string;
     weekdays: number[];
@@ -287,37 +276,6 @@ export default function EmployeeDashboardPage() {
               {unreadCounts.orders > 0 && (
                 <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-2">
                   {unreadCounts.orders}
-                </span>
-              )}
-            </ActionCard>
-          </Link>
-
-          <ActionCard
-            icon={Clock}
-            title="Shift Management"
-            description="Start or end your work shift"
-            href="/employee/shift"
-            iconColor="text-green-600"
-          />
-
-          <ActionCard
-            icon={CheckSquare}
-            title="Tasks"
-            description="View and complete daily tasks"
-            href="/employee/tasks"
-            iconColor="text-purple-600"
-          />
-
-          <Link href="/employee/messages" onClick={markMessagesAsRead}>
-            <ActionCard
-              icon={MessageSquare}
-              title="Messages"
-              description="Read announcements from management"
-              iconColor="text-amber-600"
-            >
-              {unreadCounts.messages > 0 && (
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-2">
-                  {unreadCounts.messages}
                 </span>
               )}
             </ActionCard>

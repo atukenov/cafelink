@@ -7,10 +7,8 @@
     "build": "next build --turbopack",
     "start": "NODE_ENV=production node server.js",
     "lint": "eslint",
-    "create-admin": "node scripts/create-admin.js",
-    "create-author": "node scripts/create-author.js",
-    "seed-menu": "node scripts/seed-menu.js",
-    "seed-items": "node scripts/seed-additional-items.js"
+    "reset-and-init": "node scripts/reset-and-init.js",
+    "create-second-shop": "node scripts/create-second-shop.js"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -18,8 +16,9 @@
     "@types/qrcode": "^1.5.5",
     "@types/uuid": "^10.0.0",
     "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.3",
     "jsonwebtoken": "^9.0.2",
-    "lucide-react": "^0.542.0",
+    "lucide-react": "^0.552.0",
     "mongoose": "^8.18.0",
     "next": "15.5.2",
     "qrcode": "^1.5.4",

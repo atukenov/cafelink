@@ -30,8 +30,50 @@ export class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
+    // Public endpoints that don't require authentication
+    const publicEndpoints = [
+      "/coffee-shops",
+      "/coffee-shops/", // Also match paths with trailing slash
+      "/products",
+      "/products/",
+      "/additional-items",
+      "/additional-items/",
+      "/promotions/active",
+      "/loyalty/programs",
+      "/loyalty/rewards",
+      "/orders/create",
+    ];
+
+    // Staff/Admin endpoints that require authentication
+    const protectedEndpoints = [
+      "/users",
+      "/shifts",
+      "/tasks",
+      "/messages",
+      "/statistics",
+      "/admin",
+      "/current-shifts",
+      "/orders/update",
+    ];
+
+    const isPublicEndpoint = publicEndpoints.some((e) =>
+      endpoint.startsWith(e)
+    );
+    const isProtectedEndpoint = protectedEndpoints.some((e) =>
+      endpoint.startsWith(e)
+    );
+
+    // Add authentication token for:
+    // 1. Protected endpoints (always require auth)
+    // 2. Non-GET requests on non-public endpoints
+    // 3. Skip auth for public endpoints even if token exists
+    if (
+      !isPublicEndpoint &&
+      (isProtectedEndpoint || options.method !== "GET")
+    ) {
+      if (this.token) {
+        headers.Authorization = `Bearer ${this.token}`;
+      }
     }
 
     const response = await fetch(url, {
@@ -43,7 +85,15 @@ export class ApiClient {
       const error = await response
         .json()
         .catch(() => ({ error: "Network error" }));
-      throw new Error(error.error || "Request failed");
+
+      // Special handling for authentication errors on public endpoints
+      if (response.status === 401 && isPublicEndpoint) {
+        console.warn("Authentication failed for public endpoint:", endpoint);
+        // For public endpoints, we want to continue without auth
+        return [];
+      }
+
+      throw new Error(error.error || `Request failed: ${response.statusText}`);
     }
 
     return response.json();

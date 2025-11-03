@@ -1,10 +1,14 @@
 "use client";
 
+import { useToast } from "@/components/Toast";
+import { ShopSelector } from "@/components/common/ShopSelector";
+import { useShop } from "@/contexts/ShopContext";
 import { apiClient } from "@/lib/api";
 import { AdditionalItem, CartItem, Product } from "@/lib/types";
-import { ArrowLeft, Plus, ShoppingCart, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Plus, ShoppingCart, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 
 export default function MenuPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -21,50 +25,46 @@ export default function MenuPage() {
       price: number;
     }[]
   >([]);
-  interface CurrentEmployee {
-    _id: string;
-    userId: string;
-    name: string;
-    role: string;
-    startTime: string;
-  }
 
-  const [currentEmployees, setCurrentEmployees] = useState<CurrentEmployee[]>(
-    []
-  );
+  const { selectedShop, loading: shopsLoading, error: shopError } = useShop();
+  const { showToast } = useToast();
 
-  useEffect(() => {
-    loadData();
-    loadCart();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      const [productsData, employeesData] = await Promise.all([
-        apiClient.getProducts(),
-        apiClient.getCurrentShifts(),
-      ]);
-      setProducts(productsData);
-      setCurrentEmployees(employeesData);
-    } catch (err) {
-      setError("Failed to load menu");
-      console.error("Error loading data:", err);
-    } finally {
-      setLoading(false);
+  const loadProducts = useCallback(async () => {
+    if (!selectedShop) {
+      setError("Please select a coffee shop");
+      return;
     }
-  };
 
-  const loadProducts = async () => {
     try {
-      const data = await apiClient.getProducts();
+      setLoading(true);
+      const data = await apiClient.getProducts(selectedShop._id);
       setProducts(data);
+      setError(null);
     } catch (err) {
       setError("Failed to load menu");
       console.error("Error loading products:", err);
+      showToast({
+        type: "error",
+        title: "Error",
+        message: "Failed to load menu items",
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedShop, showToast]);
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  useEffect(() => {
+    if (selectedShop) {
+      loadProducts();
+    } else if (!shopsLoading) {
+      setError("Please select a coffee shop");
+      setLoading(false);
+    }
+  }, [selectedShop, shopsLoading, loadProducts]);
 
   const loadCart = () => {
     const savedCart = localStorage.getItem("cart");
@@ -144,34 +144,52 @@ export default function MenuPage() {
       setSelectedProduct(null);
       setSelectedAdditionalItems([]);
     }
+
+    showToast({
+      type: "success",
+      title: "Added to cart",
+      message: `${productToAdd.name} has been added to your cart`,
+    });
   };
 
   const getCartItemCount = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
-  if (loading) {
+    if (shopError || error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading menu...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-md mx-auto px-4 py-4">
+            <div className="flex items-center gap-3">
+              <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
+                <ArrowLeft className="w-5 h-5 text-gray-400" />
+              </Link>
+              <h1 className="text-xl font-bold text-gray-800">Menu</h1>
+            </div>
+            <ShopSelector className="mt-2" />
+          </div>
         </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={loadProducts}
-            className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700"
-          >
-            Try Again
-          </button>
+        
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center">
+            <div className="text-red-500 mb-4">
+              <AlertTriangle className="w-12 h-12 mx-auto" />
+            </div>
+            <p className="text-gray-600">
+              {shopError ? 'Failed to load shops.' : 'Failed to load menu.'}
+              <br />
+              <span className="text-sm text-gray-500">
+                Please try again
+              </span>
+            </p>
+            <button
+              onClick={loadProducts}
+              className="mt-4 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -182,11 +200,14 @@ export default function MenuPage() {
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
-              <ArrowLeft className="w-5 h-5 text-gray-400" />
-            </Link>
-            <h1 className="text-xl font-bold text-gray-800">Menu</h1>
+          <div className="flex flex-col gap-2 flex-1 mr-4">
+            <div className="flex items-center gap-3">
+              <Link href="/" className="p-2 hover:bg-gray-100 rounded-full">
+                <ArrowLeft className="w-5 h-5 text-gray-400" />
+              </Link>
+              <h1 className="text-xl font-bold text-gray-800">Menu</h1>
+            </div>
+            <ShopSelector />
           </div>
 
           <Link
@@ -218,15 +239,19 @@ export default function MenuPage() {
                 className="bg-white rounded-xl shadow-sm p-4"
               >
                 <div className="flex gap-4">
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-20 h-20 rounded-lg object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "/placeholder-coffee.jpg";
-                    }}
-                  />
+                  <div className="w-20 h-20">
+                    <Image
+                      src={product.imageUrl || "/placeholder-coffee.jpg"}
+                      alt={product.name}
+                      width={80}
+                      height={80}
+                      className="w-20 h-20 rounded-lg object-cover"
+                      onError={() => {
+                        const img = document.querySelector(`[alt="${product.name}"]`) as HTMLImageElement;
+                        if (img) img.src = "/placeholder-coffee.jpg";
+                      }}
+                    />
+                  </div>
 
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-800 mb-1">
@@ -269,7 +294,7 @@ export default function MenuPage() {
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">
-                  Customize {selectedProduct.name}
+                  Customize {selectedProduct?.name}
                 </h3>
                 <button
                   onClick={() => setShowAdditionalItems(false)}
@@ -285,7 +310,7 @@ export default function MenuPage() {
                 <h4 className="font-medium text-gray-800 mb-2">
                   Additional Items
                 </h4>
-                {selectedProduct.additionalItems &&
+                {selectedProduct?.additionalItems &&
                 selectedProduct.additionalItems.length > 0 ? (
                   <div className="space-y-2">
                     {selectedProduct.additionalItems.map((item) => (

@@ -7,4 +7,5 @@ export * from "./OrderCard";
 export * from "./OrderStatusBadge";
 export * from "./PageHeader";
 export * from "./RejectOrderModal";
+export * from "./ShopSelector";
 export * from "./StatusBadge";
