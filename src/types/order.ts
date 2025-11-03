@@ -26,8 +26,15 @@ export interface Order {
 
 export type OrderStatus = Order["status"];
 
+// MongoDB document structure
+interface IMongoOrder extends Omit<Order, '_id' | 'createdAt' | 'updatedAt'> {
+  _id: { toString(): string };
+  createdAt: { toISOString(): string };
+  updatedAt: { toISOString(): string };
+}
+
 // Convert Mongoose IOrder to frontend Order
-export const toFrontendOrder = (order: any): Order => ({
+export const toFrontendOrder = (order: IMongoOrder): Order => ({
   ...order,
   createdAt: order.createdAt.toISOString(),
   updatedAt: order.updatedAt.toISOString(),
