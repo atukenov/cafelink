@@ -27,7 +27,7 @@ export interface Order {
 export type OrderStatus = Order["status"];
 
 // MongoDB document structure
-interface IMongoOrder extends Omit<Order, '_id' | 'createdAt' | 'updatedAt'> {
+interface IMongoOrder extends Omit<Order, "_id" | "createdAt" | "updatedAt"> {
   _id: { toString(): string };
   createdAt: { toISOString(): string };
   updatedAt: { toISOString(): string };
