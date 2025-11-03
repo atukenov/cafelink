@@ -57,7 +57,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
           </p>
           <RatingModal
             orderId={order._id}
-            onRatingSubmitted={onRatingSubmitted}
+            onRatingSubmitted={onRatingSubmitted || (() => {})}
           />
         </div>
       )}
