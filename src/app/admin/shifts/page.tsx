@@ -1,11 +1,12 @@
 "use client";
 
+import { useShop } from "@/contexts/ShopContext";
 import { apiClient } from "@/lib/api";
 import { ScheduledShift, User } from "@/lib/types";
 import { ArrowLeft, Clock, Edit, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 function WeeklyCalendar({
   employeeId,
@@ -131,6 +132,7 @@ function WeeklyCalendar({
 
 export default function AdminShiftsPage() {
   const router = useRouter();
+  const { selectedShop } = useShop();
   const [user, setUser] = useState<{
     _id: string;
     name: string;
@@ -143,13 +145,14 @@ export default function AdminShiftsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingShift, setEditingShift] = useState<ScheduledShift | null>(null);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>("");
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     employeeId: "",
     weekdays: [] as number[],
     startTime: "",
     endTime: "",
     isActive: true,
-  });
+    coffeeShopId: selectedShop?._id || "",
+  }));
 
   const weekdayNames = [
     "Sunday",
@@ -160,6 +163,27 @@ export default function AdminShiftsPage() {
     "Friday",
     "Saturday",
   ];
+
+  const loadData = useCallback(async () => {
+    if (!selectedShop?._id) return;
+    try {
+      const [shiftsData, employeesData] = await Promise.all([
+        apiClient.getScheduledShifts(),
+        apiClient.getUsers(),
+      ]);
+      setShifts(shiftsData);
+      setEmployees(
+        employeesData.filter((emp: User) =>
+          ["employee", "administrator", "admin"].includes(emp.role)
+        )
+      );
+    } catch (err) {
+      setError("Failed to load data");
+      console.error("Error loading data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedShop, setShifts, setEmployees, setError, setLoading]);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -176,27 +200,16 @@ export default function AdminShiftsPage() {
 
     setUser(parsedUser);
     loadData();
-  }, [router]);
+  }, [router, loadData]);
 
-  const loadData = async () => {
-    try {
-      const [shiftsData, employeesData] = await Promise.all([
-        apiClient.getScheduledShifts(),
-        apiClient.getUsers(),
-      ]);
-      setShifts(shiftsData);
-      setEmployees(
-        employeesData.filter((emp: User) =>
-          ["employee", "administrator"].includes(emp.role)
-        )
-      );
-    } catch (err) {
-      setError("Failed to load data");
-      console.error("Error loading data:", err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (selectedShop?._id) {
+      setFormData((prev) => ({
+        ...prev,
+        coffeeShopId: selectedShop._id,
+      }));
     }
-  };
+  }, [selectedShop]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,9 +217,12 @@ export default function AdminShiftsPage() {
       !formData.employeeId ||
       !formData.startTime ||
       !formData.endTime ||
-      formData.weekdays.length === 0
+      formData.weekdays.length === 0 ||
+      !formData.coffeeShopId
     ) {
-      setError("All fields are required");
+      setError(
+        "All fields are required. Please ensure a coffee shop is selected."
+      );
       return;
     }
 
@@ -225,6 +241,7 @@ export default function AdminShiftsPage() {
         startTime: "",
         endTime: "",
         isActive: true,
+        coffeeShopId: selectedShop?._id || "",
       });
       await loadData();
     } catch (err: unknown) {
@@ -240,6 +257,7 @@ export default function AdminShiftsPage() {
       startTime: shift.startTime,
       endTime: shift.endTime,
       isActive: shift.isActive,
+      coffeeShopId: shift.coffeeShopId,
     });
     setShowForm(true);
   };
@@ -298,24 +316,37 @@ export default function AdminShiftsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin/dashboard"
-              className="p-2 hover:bg-gray-100 rounded-full"
+        <div className="max-w-md mx-auto px-4">
+          {/* Top Navigation */}
+          <div className="py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/admin/dashboard"
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-400" />
+              </Link>
+              <h1 className="text-xl font-bold text-gray-800">
+                Shift Management
+              </h1>
+            </div>
+            <button
+              onClick={() => {
+                if (!selectedShop?._id) {
+                  setError("Please select a coffee shop first");
+                  return;
+                }
+                setFormData((prev) => ({
+                  ...prev,
+                  coffeeShopId: selectedShop._id,
+                }));
+                setShowForm(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-400" />
-            </Link>
-            <h1 className="text-xl font-bold text-gray-800">
-              Shift Management
-            </h1>
+              <Plus className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
         </div>
       </div>
 
@@ -336,12 +367,25 @@ export default function AdminShiftsPage() {
             onChange={(e) => setSelectedEmployeeId(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2"
           >
-            <option value="">All Employees</option>
-            {employees.map((employee) => (
-              <option key={employee._id} value={employee._id}>
-                {employee.name} ({employee.role})
-              </option>
-            ))}
+            <option value="">All Staff</option>
+            <optgroup label="Administrators">
+              {employees
+                .filter((emp) => emp.role === "administrator")
+                .map((employee) => (
+                  <option key={employee._id} value={employee._id}>
+                    {employee.name}
+                  </option>
+                ))}
+            </optgroup>
+            <optgroup label="Employees">
+              {employees
+                .filter((emp) => emp.role === "employee")
+                .map((employee) => (
+                  <option key={employee._id} value={employee._id}>
+                    {employee.name}
+                  </option>
+                ))}
+            </optgroup>
           </select>
         </div>
 
@@ -469,12 +513,25 @@ export default function AdminShiftsPage() {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2"
                     required
                   >
-                    <option value="">Select Employee</option>
-                    {employees.map((employee) => (
-                      <option key={employee._id} value={employee._id}>
-                        {employee.name} ({employee.role})
-                      </option>
-                    ))}
+                    <option value="">Select Staff</option>
+                    <optgroup label="Administrators">
+                      {employees
+                        .filter((emp) => emp.role === "administrator")
+                        .map((employee) => (
+                          <option key={employee._id} value={employee._id}>
+                            {employee.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                    <optgroup label="Employees">
+                      {employees
+                        .filter((emp) => emp.role === "employee")
+                        .map((employee) => (
+                          <option key={employee._id} value={employee._id}>
+                            {employee.name}
+                          </option>
+                        ))}
+                    </optgroup>
                   </select>
                 </div>
 
@@ -505,35 +562,53 @@ export default function AdminShiftsPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Start Time
                     </label>
-                    <input
-                      type="time"
-                      value={formData.startTime}
+                    <select
+                      value={
+                        formData.startTime
+                          ? formData.startTime.split(":")[0]
+                          : ""
+                      }
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          startTime: e.target.value,
+                          startTime: `${e.target.value}:00`,
                         }))
                       }
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-400"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
                       required
-                    />
+                    >
+                      <option value="">Select hour</option>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <option key={i} value={i.toString().padStart(2, "0")}>
+                          {i.toString().padStart(2, "0")}:00
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       End Time
                     </label>
-                    <input
-                      type="time"
-                      value={formData.endTime}
+                    <select
+                      value={
+                        formData.endTime ? formData.endTime.split(":")[0] : ""
+                      }
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          endTime: e.target.value,
+                          endTime: `${e.target.value}:00`,
                         }))
                       }
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-400"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
                       required
-                    />
+                    >
+                      <option value="">Select hour</option>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <option key={i} value={i.toString().padStart(2, "0")}>
+                          {i.toString().padStart(2, "0")}:00
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -561,13 +636,14 @@ export default function AdminShiftsPage() {
                     onClick={() => {
                       setShowForm(false);
                       setEditingShift(null);
-                      setFormData({
+                      setFormData((prev) => ({
+                        ...prev,
                         employeeId: "",
                         weekdays: [],
                         startTime: "",
                         endTime: "",
                         isActive: true,
-                      });
+                      }));
                     }}
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg"
                   >

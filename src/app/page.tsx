@@ -1,5 +1,6 @@
 "use client";
 
+import { CurrentShifts } from "@/components/common/CurrentShifts";
 import { ShopSelector } from "@/components/common/ShopSelector";
 import { apiClient } from "@/lib/api";
 import { Coffee, ShoppingBag } from "lucide-react";
@@ -48,6 +49,11 @@ export default function Home() {
           {/* Shop Selector */}
           <div className="mt-4">
             <ShopSelector className="max-w-sm mx-auto" />
+          </div>
+
+          {/* Current Shifts */}
+          <div className="mt-4">
+            <CurrentShifts />
           </div>
         </div>
 
