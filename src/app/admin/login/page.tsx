@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { apiClient } from "@/lib/api";
 import { ArrowLeft, Lock, Phone, Shield } from "lucide-react";
 import Link from "next/link";
@@ -70,19 +72,21 @@ export default function AdminLoginPage() {
           </p>
 
           <div className="space-y-4">
-            <button
+            <Button
               onClick={handleOTPVerification}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+              variant="primary"
+              className="w-full py-3 px-6"
             >
               Verify & Continue
-            </button>
+            </Button>
 
-            <button
+            <Button
               onClick={() => setShowOTP(false)}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-xl transition-colors"
+              variant="secondary"
+              className="w-full py-3 px-6"
             >
               Back to Login
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -110,40 +114,28 @@ export default function AdminLoginPage() {
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="+7 (xxx) xxx-xx-xx"
-                disabled={loading}
-              />
-            </div>
-          </div>
+          <Input
+            type="tel"
+            label="Phone Number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+7 (xxx) xxx-xx-xx"
+            disabled={loading}
+            className="pl-10"
+            iconLeft={<Phone className="w-5 h-5 text-gray-400" />}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              PIN Code
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="password"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Enter your PIN"
-                maxLength={6}
-                disabled={loading}
-              />
-            </div>
-          </div>
+          <Input
+            type="password"
+            label="PIN Code"
+            value={pin}
+            onChange={(e) => setPin(e.target.value)}
+            placeholder="Enter your PIN"
+            maxLength={6}
+            disabled={loading}
+            className="pl-10"
+            iconLeft={<Lock className="w-5 h-5 text-gray-400" />}
+          />
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -151,13 +143,14 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+            variant="primary"
+            loading={loading}
+            className="w-full py-3 px-6"
           >
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
+            Sign In
+          </Button>
         </form>
 
         <div className="mt-8 p-4 bg-blue-50 rounded-lg">

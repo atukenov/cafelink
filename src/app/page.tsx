@@ -2,6 +2,8 @@
 
 import { CurrentShifts } from "@/components/common/CurrentShifts";
 import { ShopSelector } from "@/components/common/ShopSelector";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { apiClient } from "@/lib/api";
 import { Coffee, ShoppingBag } from "lucide-react";
 import Link from "next/link";
@@ -37,7 +39,7 @@ export default function Home() {
   };
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+      <Card className="max-w-md w-full p-8 text-center">
         {/* Logo and Shop Selector */}
         <div className="mb-8">
           <div className="w-20 h-20 bg-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -62,9 +64,9 @@ export default function Home() {
           <div className="mb-6 space-y-3">
             <h3 className="font-semibold text-gray-700">Special Offers</h3>
             {promotions.slice(0, 2).map((promotion) => (
-              <div
+              <Card
                 key={promotion._id}
-                className={`p-4 rounded-xl ${
+                className={`p-4 ${
                   promotion.type === "sale"
                     ? "bg-red-50 border border-red-200"
                     : "bg-blue-50 border border-blue-200"
@@ -95,7 +97,7 @@ export default function Home() {
                 >
                   {promotion.description}
                 </p>
-              </div>
+              </Card>
             ))}
           </div>
         )}
@@ -106,23 +108,27 @@ export default function Home() {
             For Customers
           </h2>
 
-          <Link
-            href="/menu"
-            className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors"
-          >
-            <Coffee className="w-5 h-5" />
-            View Menu
+          <Link href="/menu" className="block w-full">
+            <Button
+              variant="primary"
+              className="w-full py-4 px-6 flex items-center justify-center gap-3"
+            >
+              <Coffee className="w-5 h-5" />
+              View Menu
+            </Button>
           </Link>
 
-          <Link
-            href="/orders"
-            className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-colors"
-          >
-            <ShoppingBag className="w-5 h-5" />
-            My Orders
+          <Link href="/orders" className="block w-full">
+            <Button
+              variant="secondary"
+              className="w-full py-4 px-6 flex items-center justify-center gap-3"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              My Orders
+            </Button>
           </Link>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

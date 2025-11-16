@@ -27,7 +27,7 @@ export async function GET(
       );
     }
 
-    if (user.role !== "author" && shop.adminId !== user._id) {
+    if (user.role !== "administrator" || shop.adminId !== user._id) {
       return NextResponse.json(
         { error: "Insufficient permissions" },
         { status: 403 }

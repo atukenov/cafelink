@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { useShop } from "@/contexts/ShopContext";
 import { apiClient } from "@/lib/api";
 import { ScheduledShift, User } from "@/lib/types";
@@ -168,39 +171,18 @@ export default function AdminShiftsPage() {
     if (!selectedShop?._id) return;
     try {
       const [shiftsData, employeesData] = await Promise.all([
-        apiClient.getScheduledShifts(),
+        apiClient.getScheduledShifts(selectedShop._id),
         apiClient.getUsers(),
       ]);
       setShifts(shiftsData);
-      setEmployees(
-        employeesData.filter((emp: User) =>
-          ["employee", "administrator", "admin"].includes(emp.role)
-        )
-      );
-    } catch (err) {
-      setError("Failed to load data");
-      console.error("Error loading data:", err);
-    } finally {
+      setEmployees(employeesData);
+      setLoading(false);
+      setError(null);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load data");
       setLoading(false);
     }
-  }, [selectedShop, setShifts, setEmployees, setError, setLoading]);
-
-  useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (!userData) {
-      router.push("/admin/login");
-      return;
-    }
-
-    const parsedUser = JSON.parse(userData);
-    if (!["admin", "author"].includes(parsedUser.role)) {
-      router.push("/admin/login");
-      return;
-    }
-
-    setUser(parsedUser);
-    loadData();
-  }, [router, loadData]);
+  }, [selectedShop]);
 
   useEffect(() => {
     if (selectedShop?._id) {
@@ -249,6 +231,48 @@ export default function AdminShiftsPage() {
     }
   };
 
+  <div className="grid grid-cols-2 gap-4">
+    <Input
+      as="select"
+      label="Start Time"
+      value={formData.startTime ? formData.startTime.split(":")[0] : ""}
+      onChange={(e) =>
+        setFormData((prev) => ({
+          ...prev,
+          startTime: `${(e.target as unknown as HTMLSelectElement).value}:00`,
+        }))
+      }
+      required
+      className="w-full"
+    >
+      <option value="">Select hour</option>
+      {Array.from({ length: 24 }, (_, i) => (
+        <option key={i} value={i.toString().padStart(2, "0")}>
+          {i.toString().padStart(2, "0")}:00
+        </option>
+      ))}
+    </Input>
+    <Input
+      as="select"
+      label="End Time"
+      value={formData.endTime ? formData.endTime.split(":")[0] : ""}
+      onChange={(e) =>
+        setFormData((prev) => ({
+          ...prev,
+          endTime: `${(e.target as unknown as HTMLSelectElement).value}:00`,
+        }))
+      }
+      required
+      className="w-full"
+    >
+      <option value="">Select hour</option>
+      {Array.from({ length: 24 }, (_, i) => (
+        <option key={i} value={i.toString().padStart(2, "0")}>
+          {i.toString().padStart(2, "0")}:00
+        </option>
+      ))}
+    </Input>
+  </div>;
   const handleEdit = (shift: ScheduledShift) => {
     setEditingShift(shift);
     setFormData({
@@ -330,7 +354,7 @@ export default function AdminShiftsPage() {
                 Shift Management
               </h1>
             </div>
-            <button
+            <Button
               onClick={() => {
                 if (!selectedShop?._id) {
                   setError("Please select a coffee shop first");
@@ -342,19 +366,23 @@ export default function AdminShiftsPage() {
                 }));
                 setShowForm(true);
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full"
+              variant="primary"
+              size="sm"
+              icon={Plus}
+              className="p-2"
+              aria-label="Create Shift"
             >
-              <Plus className="w-5 h-5" />
-            </button>
+              <span className="sr-only">Create Shift</span>
+            </Button>
           </div>
         </div>
       </div>
 
       <div className="max-w-md mx-auto p-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+          <Card className="bg-red-50 border border-red-200 p-3 mb-4">
             <p className="text-red-600 text-sm">{error}</p>
-          </div>
+          </Card>
         )}
 
         {/* Employee Filter */}
@@ -434,10 +462,7 @@ export default function AdminShiftsPage() {
               </div>
             )}
             {filteredShifts.map((shift) => (
-              <div
-                key={shift._id}
-                className="bg-white rounded-xl shadow-sm p-4"
-              >
+              <Card key={shift._id} className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-800 mb-1">
@@ -469,21 +494,29 @@ export default function AdminShiftsPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={() => handleEdit(shift)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+                      variant="secondary"
+                      size="sm"
+                      icon={Edit}
+                      className="p-2"
+                      aria-label="Edit Shift"
                     >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                    <Button
                       onClick={() => handleDelete(shift._id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded"
+                      variant="danger"
+                      size="sm"
+                      icon={Trash2}
+                      className="p-2"
+                      aria-label="Delete Shift"
                     >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      <span className="sr-only">Delete</span>
+                    </Button>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}

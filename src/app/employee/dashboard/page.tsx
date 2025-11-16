@@ -1,7 +1,8 @@
 "use client";
 
 import { useToast } from "@/components/Toast";
-import { ActionCard } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { ActionCard, Card } from "@/components/ui/Card";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { useAuth } from "@/hooks/useAuth";
 import { useSocket } from "@/hooks/useSocket";
@@ -60,24 +61,28 @@ export default function EmployeeDashboardPage() {
             </div>
           </div>
 
-          <button
+          <Button
             onClick={logout}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+            variant="secondary"
+            size="sm"
+            icon={LogOut}
+            className="p-2"
+            aria-label="Logout"
           >
-            <LogOut className="w-5 h-5" />
-          </button>
+            <span className="sr-only">Logout</span>
+          </Button>
         </div>
       </div>
 
       {/* Dashboard Content */}
       <div className="max-w-md mx-auto p-4">
         {/* Welcome Message */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6 text-center">
+        <Card className="mb-6 text-center p-6">
           <h2 className="text-xl font-bold text-gray-800 mb-2">
             Welcome Back!
           </h2>
           <p className="text-gray-600">View and manage your orders below</p>
-        </div>
+        </Card>
 
         {/* Orders Section */}
         <div className="space-y-4">

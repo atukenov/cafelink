@@ -32,8 +32,6 @@ export class ApiClient {
 
     // Public endpoints that don't require authentication
     const publicEndpoints = [
-      "/coffee-shops",
-      "/coffee-shops/", // Also match paths with trailing slash
       "/products",
       "/products/",
       "/additional-items",
@@ -54,6 +52,8 @@ export class ApiClient {
       "/admin",
       "/current-shifts",
       "/orders/update",
+      "/coffee-shops",
+      "/coffee-shops/",
     ];
 
     const isPublicEndpoint = publicEndpoints.some((e) =>
